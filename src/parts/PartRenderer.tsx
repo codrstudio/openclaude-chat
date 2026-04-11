@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import { Paperclip, FileText, ChevronDown } from "lucide-react";
+import { Paperclip, ChevronDown } from "lucide-react";
 import { Markdown } from "../components/Markdown.js";
 import { LazyRender } from "../components/LazyRender.js";
 import { ReasoningBlock } from "./ReasoningBlock.js";
@@ -9,85 +9,20 @@ import { resolveDisplayRenderer } from "../display/registry.js";
 import type { DisplayRendererMap } from "../display/registry.js";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "../ui/collapsible.js";
 import { cn } from "../lib/utils.js";
+import type { MessagePart, TextPart, ReasoningPart, ToolInvocationPart } from "../types.js";
 
 const HEAVY_RENDERERS = new Set([
   "chart", "map", "table",
   "spreadsheet", "gallery", "image",
 ]);
 
-// Minimal part types — mirrors @ai-sdk/react Message["parts"]
-type TextPart = { type: "text"; text: string };
-type ReasoningPart = { type: "reasoning"; reasoning: string };
-type ToolInvocationPart = {
-  type: "tool-invocation";
-  toolInvocation: {
-    toolName: string;
-    toolCallId?: string;
-    state: "call" | "partial-call" | "result";
-    args?: Record<string, unknown>;
-    result?: unknown;
-  };
-};
-type ImageAttachmentPart = { type: "image"; _ref?: string; mimeType?: string };
-type FileAttachmentPart = { type: "file"; _ref?: string; mimeType?: string };
-type MessagePart = TextPart | ReasoningPart | ToolInvocationPart | ImageAttachmentPart | FileAttachmentPart | { type: string };
-
 export interface PartRendererProps {
   part: MessagePart;
   isStreaming?: boolean;
   displayRenderers?: DisplayRendererMap;
-  attachmentUrl?: (ref: string) => string;
 }
 
 // ─── Attachment sub-components ────────────────────────────────────────────────
-
-function AttachmentImage({ src }: { src: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <img
-        src={src}
-        loading="lazy"
-        alt="Imagem anexada"
-        className="max-w-xs rounded-lg border cursor-pointer object-cover"
-        onClick={() => setOpen(true)}
-      />
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
-          onClick={() => setOpen(false)}
-        >
-          <img
-            src={src}
-            alt="Imagem em tamanho real"
-            className="max-w-[90vw] max-h-[90vh] rounded-lg"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
-    </>
-  );
-}
-
-function AudioAttachment({ src }: { src: string }) {
-  return (
-    <audio controls src={src} className="max-w-xs w-full" />
-  );
-}
-
-function PdfChip({ src, filename }: { src: string; filename: string }) {
-  return (
-    <a
-      href={src}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-2 rounded-lg border bg-muted px-3 py-2 text-sm hover:bg-muted/80 transition-colors"
-    >
-      <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <span className="max-w-[200px] truncate">{filename}</span>
-    </a>
-  );
-}
 
 function AttachmentTextBlock({ filename, content }: { filename: string; content: string }) {
   const [open, setOpen] = useState(false);
@@ -115,11 +50,10 @@ function AttachmentTextBlock({ filename, content }: { filename: string; content:
 
 // ─── Main renderer ────────────────────────────────────────────────────────────
 
-export const PartRenderer = memo(function PartRenderer({ part, isStreaming, displayRenderers, attachmentUrl }: PartRendererProps) {
+export const PartRenderer = memo(function PartRenderer({ part, isStreaming, displayRenderers }: PartRendererProps) {
   switch (part.type) {
     case "text": {
       const p = part as TextPart;
-      // Pre-processed attachment text: "[📎 filename]\ncontent"
       if (p.text.startsWith("[📎")) {
         const firstNewline = p.text.indexOf("\n");
         const header = firstNewline >= 0 ? p.text.slice(0, firstNewline) : p.text;
@@ -138,17 +72,48 @@ export const PartRenderer = memo(function PartRenderer({ part, isStreaming, disp
 
     case "tool-invocation": {
       const { toolInvocation } = part as ToolInvocationPart;
-      const isDisplay = toolInvocation.toolName.startsWith("display_");
+      // O openclaude-sdk entrega os display tools como meta-tools MCP com
+      // prefixo `mcp__display__display_*` (ex: mcp__display__display_highlight).
+      // O tipo especifico do widget vem no campo `action` do input/args
+      // (ex: {action: "metric", label: "...", value: "..."}).
+      //
+      // Alem disso aceitamos a forma "legada" direta `display_*` (compat).
+      const name = toolInvocation.toolName;
+      const isMcpDisplay = /^mcp__display__display_(highlight|collection|card|visual)$/.test(name);
+      const isLegacyDisplay = name.startsWith("display_");
+      const isDisplay = isMcpDisplay || isLegacyDisplay;
 
-      if (isDisplay && toolInvocation.state === "result") {
-        const result = toolInvocation.result as Record<string, unknown>;
-        const action = toolInvocation.toolName.replace("display_", "");
-        const Renderer = resolveDisplayRenderer(action, displayRenderers);
-        if (Renderer) {
-          const rendered = <Renderer {...result} />;
-          if (!isStreaming && action && HEAVY_RENDERERS.has(action)) {
-            return <LazyRender>{rendered}</LazyRender>;
+      if (isDisplay) {
+        // IMPORTANTE: para display tools, o `args` (input) contem a definicao
+        // COMPLETA do widget. O `result` (tool_result) e apenas uma confirmacao
+        // minima (`{action: "metric"}`). Sempre preferimos args aqui.
+        const payload = toolInvocation.args as Record<string, unknown> | undefined;
+        // Para meta-tools MCP, a action vem no payload.
+        // Para display_* legado, a action e o sufixo do toolName.
+        const action = isMcpDisplay
+          ? (payload?.action as string | undefined)
+          : name.replace(/^display_/, "");
+        const Renderer = action ? resolveDisplayRenderer(action, displayRenderers) : null;
+        if (payload && Renderer && action) {
+          // Alguns campos complexos (ex: trend, data) podem chegar serializados
+          // como JSON string se o modelo nao souber passar objetos. Tentamos
+          // parsear string → objeto antes de spreadar no renderer.
+          const normalized: Record<string, unknown> = {};
+          for (const [k, v] of Object.entries(payload)) {
+            if (typeof v === "string" && (v.startsWith("{") || v.startsWith("["))) {
+              try {
+                normalized[k] = JSON.parse(v);
+              } catch {
+                normalized[k] = v;
+              }
+            } else {
+              normalized[k] = v;
+            }
           }
+          const rendered = <Renderer {...normalized} />;
+          // NOTE: LazyRender via IntersectionObserver nao funciona bem dentro
+          // do virtualized MessageList (itens ficam position:absolute e o
+          // observer nao dispara consistente). Renderizamos direto.
           return rendered;
         }
       }
@@ -158,6 +123,7 @@ export const PartRenderer = memo(function PartRenderer({ part, isStreaming, disp
           <ToolResult
             toolName={toolInvocation.toolName}
             result={toolInvocation.result}
+            isError={toolInvocation.isError}
           />
         );
       }
@@ -169,27 +135,6 @@ export const PartRenderer = memo(function PartRenderer({ part, isStreaming, disp
           args={toolInvocation.args}
         />
       );
-    }
-
-    case "image": {
-      const p = part as ImageAttachmentPart;
-      if (!p._ref || !attachmentUrl) return null;
-      return <AttachmentImage src={attachmentUrl(p._ref)} />;
-    }
-
-    case "file": {
-      const p = part as FileAttachmentPart;
-      if (!p._ref || !attachmentUrl) return null;
-      const src = attachmentUrl(p._ref);
-      if (p.mimeType?.startsWith("audio/")) {
-        return <AudioAttachment src={src} />;
-      }
-      if (p.mimeType === "application/pdf") {
-        // Extract a human-readable filename from the att_ts_hex.ext pattern
-        const filename = p._ref.replace(/^att_\d+_[0-9a-f]+\./, "") || p._ref;
-        return <PdfChip src={src} filename={filename} />;
-      }
-      return null;
     }
 
     default:

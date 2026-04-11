@@ -43,21 +43,21 @@ export function ToolResult({ toolName, result, isError = false, className }: Too
       <div className={cn(
         "rounded-md border text-sm overflow-hidden",
         isError
-          ? "border-red-500/30 bg-red-500/5"
-          : "border-green-500/30 bg-green-500/5"
+          ? "border-destructive/40 bg-destructive/5"
+          : "border-border bg-muted/40"
       )}>
         <CollapsibleTrigger
           className={cn(
-            "flex items-center gap-2 w-full px-3 py-2 text-left font-medium hover:bg-muted/50 cursor-pointer",
+            "flex items-center gap-2 w-full px-3 py-2 text-left font-medium hover:bg-muted/60 cursor-pointer",
           )}
           aria-expanded={expanded}
         >
           {isError ? (
-            <AlertCircle className="h-3.5 w-3.5 shrink-0 text-red-500" aria-hidden="true" />
+            <AlertCircle className="h-3.5 w-3.5 shrink-0 text-destructive" aria-hidden="true" />
           ) : (
-            <CheckCircle className="h-3.5 w-3.5 shrink-0 text-green-500" aria-hidden="true" />
+            <CheckCircle className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
           )}
-          <span className={cn("font-mono text-xs", isError ? "text-red-500" : "text-green-500")}>
+          <span className={cn("font-mono text-xs", isError ? "text-destructive" : "text-foreground")}>
             {isError ? `${toolName} erro` : `${toolName} ok`}
           </span>
           {!expanded && preview && (

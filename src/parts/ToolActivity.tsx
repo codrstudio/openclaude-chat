@@ -56,22 +56,21 @@ export function ToolActivity({ toolName, state, args, className, iconMap }: Tool
 
   return (
     <div className={cn(
-      "flex items-center gap-2 rounded-md border px-3 py-2 text-sm",
-      "border-amber-500/30 bg-amber-500/5",
+      "flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm",
       className
     )}>
-      <span className="text-amber-500 shrink-0" aria-hidden="true">
+      <span className="text-muted-foreground shrink-0" aria-hidden="true">
         <Icon size={14} />
       </span>
-      <span className="font-medium font-mono text-amber-500">{displayName}</span>
+      <span className="font-medium font-mono text-foreground">{displayName}</span>
       {argsPreview && (
         <span className="truncate text-xs text-muted-foreground font-mono max-w-[300px]">{argsPreview}</span>
       )}
       <span className="ml-auto text-muted-foreground">
         {isActive ? (
-          <Loader2 size={14} className="animate-spin text-amber-500" aria-label="Executando..." />
+          <Loader2 size={14} className="animate-spin" aria-label="Executando..." />
         ) : (
-          <Check size={14} className="text-green-500" aria-label="Concluido" />
+          <Check size={14} aria-label="Concluido" />
         )}
       </span>
     </div>
