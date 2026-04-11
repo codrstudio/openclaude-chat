@@ -1,17 +1,16 @@
 import React, { createContext, useContext } from "react";
-import { useBackboneChat, type UseBackboneChatOptions } from "./useBackboneChat.js";
+import { useOpenClaudeChat, type UseOpenClaudeChatOptions } from "./useOpenClaudeChat.js";
 
-type ChatContextValue = ReturnType<typeof useBackboneChat>;
+type ChatContextValue = ReturnType<typeof useOpenClaudeChat>;
 
 const ChatContext = createContext<ChatContextValue | null>(null);
 
-export interface ChatProviderProps extends Omit<UseBackboneChatOptions, "initialMessages"> {
-  initialMessages?: UseBackboneChatOptions["initialMessages"];
+export interface ChatProviderProps extends UseOpenClaudeChatOptions {
   children: React.ReactNode;
 }
 
-export function ChatProvider({ endpoint, token, sessionId, initialMessages, children }: ChatProviderProps) {
-  const chat = useBackboneChat({ endpoint, token, sessionId, initialMessages });
+export function ChatProvider({ children, ...options }: ChatProviderProps) {
+  const chat = useOpenClaudeChat(options);
   return <ChatContext.Provider value={chat}>{children}</ChatContext.Provider>;
 }
 

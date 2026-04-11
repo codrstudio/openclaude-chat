@@ -1,16 +1,31 @@
-// @codrstudio/agentic-chat
-// Barrel exports
+// @codrstudio/openclaude-chat — barrel
+
+// Tipos publicos
+export type {
+  Message,
+  MessagePart,
+  MessageRole,
+  TextPart,
+  ReasoningPart,
+  ToolInvocationPart,
+  ToolInvocationState,
+} from "./types.js";
 
 // Componente principal
 export { Chat } from "./components/Chat.js";
 export type { ChatProps } from "./components/Chat.js";
 
-export { useBackboneChat } from "./hooks/useBackboneChat.js";
-export type { UseBackboneChatOptions, Message } from "./hooks/useBackboneChat.js";
+// Hook + Provider
+export { useOpenClaudeChat } from "./hooks/useOpenClaudeChat.js";
+export type {
+  UseOpenClaudeChatOptions,
+  UseOpenClaudeChatReturn,
+} from "./hooks/useOpenClaudeChat.js";
 
 export { ChatProvider, useChatContext } from "./hooks/ChatProvider.js";
 export type { ChatProviderProps } from "./hooks/ChatProvider.js";
 
+// Subcomponentes
 export { Markdown } from "./components/Markdown.js";
 export { StreamingIndicator } from "./components/StreamingIndicator.js";
 export { ErrorNote } from "./components/ErrorNote.js";
@@ -22,19 +37,17 @@ export type { MessageListProps } from "./components/MessageList.js";
 export { MessageInput } from "./components/MessageInput.js";
 export type { MessageInputProps, Attachment } from "./components/MessageInput.js";
 
+// Parts
 export { PartRenderer } from "./parts/PartRenderer.js";
 export type { PartRendererProps } from "./parts/PartRenderer.js";
-
 export { ReasoningBlock } from "./parts/ReasoningBlock.js";
 export type { ReasoningBlockProps } from "./parts/ReasoningBlock.js";
-
 export { ToolActivity, defaultToolIconMap } from "./parts/ToolActivity.js";
 export type { ToolActivityProps, ToolActivityState } from "./parts/ToolActivity.js";
-
 export { ToolResult } from "./parts/ToolResult.js";
 export type { ToolResultProps } from "./parts/ToolResult.js";
 
-// Display Renderers
+// Display renderers
 export { AlertRenderer } from "./display/AlertRenderer.js";
 export { MetricCardRenderer } from "./display/MetricCardRenderer.js";
 export { PriceHighlightRenderer } from "./display/PriceHighlightRenderer.js";
@@ -55,26 +68,9 @@ export { LinkPreviewRenderer } from "./display/LinkPreviewRenderer.js";
 export { MapViewRenderer } from "./display/MapViewRenderer.js";
 export { ChoiceButtonsRenderer } from "./display/ChoiceButtonsRenderer.js";
 
-// Display Registry
+// Registry
 export { defaultDisplayRenderers, resolveDisplayRenderer } from "./display/registry.js";
 export type { DisplayRendererMap, DisplayActionName } from "./display/registry.js";
 
-// Conversation management
-export {
-  ConversationList,
-  ConversationBar,
-  useConversations,
-  useIsMobile,
-  formatRelativeTime,
-  buildInitialMessages,
-  groupConversations,
-} from "./conversations/index.js";
-
-export type {
-  ConversationListProps,
-  ConversationBarProps,
-  UseConversationsOptions,
-  UseConversationsReturn,
-  Conversation,
-  BackendMessage,
-} from "./conversations/index.js";
+// useIsMobile helper reuse
+export { useIsMobile } from "./hooks/useIsMobile.js";

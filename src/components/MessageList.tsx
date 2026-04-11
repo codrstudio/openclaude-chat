@@ -1,7 +1,8 @@
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
-import { useRef, useEffect, useMemo, useCallback } from "react";
+import { useRef, useEffect, useMemo, useCallback, type ReactNode } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { Message } from "@ai-sdk/react";
+import { Sparkles } from "lucide-react";
+import type { Message } from "../types.js";
 import { MessageBubble } from "./MessageBubble.js";
 import { StreamingIndicator } from "./StreamingIndicator.js";
 import { ErrorNote } from "./ErrorNote.js";
@@ -13,13 +14,29 @@ export interface MessageListProps {
   messages: Message[];
   isLoading?: boolean;
   displayRenderers?: DisplayRendererMap;
-  attachmentUrl?: (ref: string) => string;
   className?: string;
   error?: Error;
   onRetry?: () => void;
+  emptyState?: ReactNode;
 }
 
-export function MessageList({ messages, isLoading, displayRenderers, attachmentUrl, className, error, onRetry }: MessageListProps) {
+function DefaultWelcome() {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-4 px-6 py-16 text-center">
+      <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
+        <Sparkles className="size-7" />
+      </div>
+      <div className="space-y-1.5">
+        <h2 className="text-xl font-semibold tracking-tight">Como posso ajudar?</h2>
+        <p className="max-w-sm text-sm text-muted-foreground">
+          Envie uma mensagem para comecar a conversa. Voce pode pedir respostas, acionar ferramentas ou colar conteudo para analise.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export function MessageList({ messages, isLoading, displayRenderers,className, error, onRetry, emptyState }: MessageListProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const isFollowingRef = useRef(true);
 
@@ -76,9 +93,7 @@ export function MessageList({ messages, isLoading, displayRenderers, attachmentU
     return (
       <ScrollAreaPrimitive.Root className={cn("flex-1 relative overflow-hidden", className)}>
         <ScrollAreaPrimitive.Viewport ref={viewportRef} className="h-full w-full rounded-[inherit]">
-          <div className="flex items-center justify-center text-muted-foreground text-sm py-8">
-            Envie uma mensagem para comecar
-          </div>
+          {emptyState ?? <DefaultWelcome />}
         </ScrollAreaPrimitive.Viewport>
         <ScrollBar />
         <ScrollAreaPrimitive.Corner />
@@ -114,7 +129,6 @@ export function MessageList({ messages, isLoading, displayRenderers, attachmentU
                     message={message}
                     isStreaming={virtualRow.index === lastAssistantIndex && isLoading && messages[messages.length - 1]?.role === "assistant"}
                     displayRenderers={displayRenderers}
-                    attachmentUrl={attachmentUrl}
                   />
                 </div>
               );
@@ -126,9 +140,9 @@ export function MessageList({ messages, isLoading, displayRenderers, attachmentU
             <StreamingIndicator />
           </div>
         )}
-        {!isLoading && error && messages.length > 0 && messages[messages.length - 1]?.role !== "assistant" && (
+        {!isLoading && error && (
           <div className="px-4 pb-3">
-            <ErrorNote onRetry={onRetry} />
+            <ErrorNote message={error.message} onRetry={onRetry} />
           </div>
         )}
       </ScrollAreaPrimitive.Viewport>

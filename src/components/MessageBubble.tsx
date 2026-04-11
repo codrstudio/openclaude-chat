@@ -1,9 +1,10 @@
 import { memo, useState, useCallback } from "react";
-import type { Message } from "@ai-sdk/react";
+import type { Message } from "../types.js";
 import { cn } from "../lib/utils.js";
 import { Markdown } from "./Markdown.js";
 import { StreamingIndicator } from "./StreamingIndicator.js";
 import { PartRenderer } from "../parts/PartRenderer.js";
+import { PartErrorBoundary } from "../parts/PartErrorBoundary.js";
 import type { DisplayRendererMap } from "../display/registry.js";
 import { Copy, Check } from "lucide-react";
 
@@ -11,7 +12,6 @@ export interface MessageBubbleProps {
   message: Message;
   isStreaming?: boolean;
   displayRenderers?: DisplayRendererMap;
-  attachmentUrl?: (ref: string) => string;
   className?: string;
 }
 
@@ -49,9 +49,11 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-export const MessageBubble = memo(function MessageBubble({ message, isStreaming, displayRenderers, attachmentUrl, className }: MessageBubbleProps) {
+export const MessageBubble = memo(function MessageBubble({ message, isStreaming, displayRenderers, className }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const hasParts = Array.isArray(message.parts) && message.parts.length > 0;
+  const hasText = typeof message.content === "string" && message.content.length > 0;
+  const isEmptyAssistant = !isUser && !hasParts && !hasText && !isStreaming;
 
   return (
     <div className={cn("group/bubble", isUser ? "flex flex-col items-end" : "flex flex-col items-start")}>
@@ -68,16 +70,20 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
         {hasParts
           ? <div className="flex flex-col gap-3">
               {(message.parts as { type: string }[]).map((part, i) => (
-                <PartRenderer
-                  key={i}
-                  part={part as Parameters<typeof PartRenderer>[0]["part"]}
-                  isStreaming={isStreaming}
-                  displayRenderers={displayRenderers}
-                  attachmentUrl={attachmentUrl}
-                />
+                <PartErrorBoundary key={i} label={`part:${part.type}`}>
+                  <PartRenderer
+                    part={part as Parameters<typeof PartRenderer>[0]["part"]}
+                    isStreaming={isStreaming}
+                    displayRenderers={displayRenderers}
+                  />
+                </PartErrorBoundary>
               ))}
             </div>
-          : <Markdown>{message.content}</Markdown>
+          : hasText
+            ? <Markdown>{message.content}</Markdown>
+            : isEmptyAssistant
+              ? <span className="text-xs italic text-muted-foreground">(resposta vazia)</span>
+              : null
         }
         {isStreaming && !isUser && <StreamingIndicator />}
       </div>
@@ -97,6 +103,5 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
   prev.message === next.message
   && prev.isStreaming === next.isStreaming
   && prev.displayRenderers === next.displayRenderers
-  && prev.attachmentUrl === next.attachmentUrl
   && prev.className === next.className
 );

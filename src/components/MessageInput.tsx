@@ -329,7 +329,7 @@ export function MessageInput({
             <X className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-2 flex-1">
-            <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+            <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
             <span className="text-sm font-medium tabular-nums">{formatTime(elapsed)}</span>
             <div className="flex-1 flex items-center gap-0.5 px-2">
               {Array.from({ length: 20 }, (_, i) => (
