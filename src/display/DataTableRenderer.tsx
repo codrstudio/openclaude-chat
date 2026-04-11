@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { DisplayTable } from "@codrstudio/agentic-sdk";
+import type { DisplayTable } from "./sdk-types.js";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../ui/table.js";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area.js";

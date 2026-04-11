@@ -1,22 +1,40 @@
-import type { DisplayPrice } from "@codrstudio/agentic-sdk";
+import type { DisplayPrice } from "./sdk-types.js";
 import { ExternalLink } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Card } from "../ui/card";
 
-function formatPrice(value: number, currency: string): string {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency,
-  }).format(value);
+function formatPrice(value: number, currency?: string): string {
+  // Fallbacks defensivos: se o modelo nao enviar currency ou enviar um valor
+  // invalido (ex: string vazia), caimos num formato numerico simples em vez de
+  // crashar a arvore React com "Currency code is required".
+  try {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: currency || "BRL",
+    }).format(value);
+  } catch {
+    return new Intl.NumberFormat("pt-BR").format(value);
+  }
 }
 
 export function PriceHighlightRenderer({ value, label, context, source, badge }: DisplayPrice) {
+  // Tambem aceita value como numero flat (modelo pode nao seguir schema exato).
+  const amount =
+    typeof value === "number"
+      ? value
+      : typeof value === "object" && value !== null && "value" in value
+        ? (value as { value: number }).value
+        : 0;
+  const currency =
+    typeof value === "object" && value !== null && "currency" in value
+      ? (value as { currency?: string }).currency
+      : undefined;
   return (
     <Card className="p-4 space-y-1 w-fit">
       <p className="text-sm text-muted-foreground">{label}</p>
       <div className="flex items-baseline gap-2">
         <span className="text-2xl font-bold text-foreground">
-          {formatPrice(value.value, value.currency)}
+          {formatPrice(amount, currency)}
         </span>
         {badge && (
           <Badge variant="destructive">

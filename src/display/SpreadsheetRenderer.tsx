@@ -1,4 +1,4 @@
-import type { DisplaySpreadsheet } from "@codrstudio/agentic-sdk";
+import type { DisplaySpreadsheet } from "./sdk-types.js";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area.js";
 import {
   Table,

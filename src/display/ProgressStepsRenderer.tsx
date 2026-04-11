@@ -1,4 +1,4 @@
-import type { DisplayProgress } from "@codrstudio/agentic-sdk";
+import type { DisplayProgress } from "./sdk-types.js";
 import { Check, Circle, Clock } from "lucide-react";
 import { Progress } from "../ui/progress.js";
 import { Badge } from "../ui/badge.js";

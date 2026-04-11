@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { DisplayGallery } from "@codrstudio/agentic-sdk";
+import type { DisplayGallery } from "./sdk-types.js";
 import { ZoomIn } from "lucide-react";
 import { cn } from "../lib/utils.js";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog.js";

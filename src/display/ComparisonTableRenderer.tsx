@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { DisplayComparison } from "@codrstudio/agentic-sdk";
+import type { DisplayComparison } from "./sdk-types.js";
 import { CheckCircle } from "lucide-react";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area.js";
 import {

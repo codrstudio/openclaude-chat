@@ -1,4 +1,4 @@
-import type { DisplayFile } from "@codrstudio/agentic-sdk";
+import type { DisplayFile } from "./sdk-types.js";
 import {
   Download,
   File,

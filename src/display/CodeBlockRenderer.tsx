@@ -1,4 +1,4 @@
-import type { DisplayCode } from "@codrstudio/agentic-sdk";
+import type { DisplayCode } from "./sdk-types.js";
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../ui/button.js";

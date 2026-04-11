@@ -1,4 +1,4 @@
-import type { DisplayCarousel } from "@codrstudio/agentic-sdk";
+import type { DisplayCarousel } from "./sdk-types.js";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";

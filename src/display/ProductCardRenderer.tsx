@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { DisplayProduct } from "@codrstudio/agentic-sdk";
+import type { DisplayProduct } from "./sdk-types.js";
 import { Star } from "lucide-react";
 import { Card, CardContent, CardTitle } from "../ui/card.js";
 import { Badge } from "../ui/badge.js";

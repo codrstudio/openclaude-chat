@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { DisplayImage } from "@codrstudio/agentic-sdk";
+import type { DisplayImage } from "./sdk-types.js";
 import { ZoomIn, ZoomOut, RotateCcw, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog.js";
 import { Button } from "../ui/button.js";

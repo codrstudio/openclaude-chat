@@ -1,4 +1,4 @@
-import type { DisplaySteps } from "@codrstudio/agentic-sdk";
+import type { DisplaySteps } from "./sdk-types.js";
 import { cn } from "../lib/utils";
 import { Badge } from "../ui/badge";
 

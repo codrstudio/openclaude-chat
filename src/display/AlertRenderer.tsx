@@ -1,24 +1,20 @@
-import type { DisplayAlert } from "@codrstudio/agentic-sdk";
+import type { DisplayAlert } from "./sdk-types.js";
 import { AlertCircle, AlertTriangle, CheckCircle, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert.js";
 
 type AlertVariant = "info" | "warning" | "error" | "success";
 
-const VARIANT_CONFIG: Record<AlertVariant, { Icon: typeof Info; className?: string }> = {
-  info: { Icon: Info, className: "text-blue-600 dark:text-blue-400 *:[svg]:text-blue-600 dark:*:[svg]:text-blue-400 border-blue-500/50" },
-  warning: { Icon: AlertTriangle, className: "text-yellow-600 dark:text-yellow-400 *:[svg]:text-yellow-600 dark:*:[svg]:text-yellow-400 border-yellow-500/50" },
-  error: { Icon: AlertCircle },
-  success: { Icon: CheckCircle, className: "text-green-600 dark:text-green-400 *:[svg]:text-green-600 dark:*:[svg]:text-green-400 border-green-500/50" },
+const VARIANT_ICON: Record<AlertVariant, typeof Info> = {
+  info: Info,
+  warning: AlertTriangle,
+  error: AlertCircle,
+  success: CheckCircle,
 };
 
 export function AlertRenderer({ variant = "info", title, message }: DisplayAlert) {
-  const { Icon, className } = VARIANT_CONFIG[variant as AlertVariant];
-
+  const Icon = VARIANT_ICON[variant as AlertVariant] ?? Info;
   return (
-    <Alert
-      variant={variant === "error" ? "destructive" : "default"}
-      className={className}
-    >
+    <Alert variant={variant === "error" ? "destructive" : "default"}>
       <Icon />
       {title && <AlertTitle>{title}</AlertTitle>}
       <AlertDescription>{message}</AlertDescription>

@@ -1,4 +1,4 @@
-import type { DisplaySources } from "@codrstudio/agentic-sdk";
+import type { DisplaySources } from "./sdk-types.js";
 import { ExternalLink, Globe } from "lucide-react";
 
 export function SourcesListRenderer({ label, sources }: DisplaySources) {

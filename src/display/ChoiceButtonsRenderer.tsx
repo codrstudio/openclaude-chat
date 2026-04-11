@@ -1,4 +1,4 @@
-import type { DisplayChoices } from "@codrstudio/agentic-sdk";
+import type { DisplayChoices } from "./sdk-types.js";
 import { useState } from "react";
 import { Button } from "../ui/button.js";
 import { Card } from "../ui/card.js";

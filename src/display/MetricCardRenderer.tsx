@@ -1,4 +1,4 @@
-import type { DisplayMetric } from "@codrstudio/agentic-sdk";
+import type { DisplayMetric } from "./sdk-types.js";
 import { ArrowDown, ArrowRight, ArrowUp } from "lucide-react";
 import { Card } from "../ui/card.js";
 

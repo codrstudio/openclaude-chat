@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { DisplayLink } from "@codrstudio/agentic-sdk";
+import type { DisplayLink } from "./sdk-types.js";
 import { Globe } from "lucide-react";
 import { Card } from "../ui/card";
 

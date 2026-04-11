@@ -1,4 +1,4 @@
-import type { DisplayChart } from "@codrstudio/agentic-sdk";
+import type { DisplayChart } from "./sdk-types.js";
 import {
   AreaChart,
   Area,

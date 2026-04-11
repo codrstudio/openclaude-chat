@@ -1,4 +1,4 @@
-import type { DisplayMap } from "@codrstudio/agentic-sdk";
+import type { DisplayMap } from "./sdk-types.js";
 import { MapPin } from "lucide-react";
 import { Card } from "../ui/card.js";
 import { Separator } from "../ui/separator.js";
