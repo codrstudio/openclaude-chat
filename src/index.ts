@@ -25,6 +25,12 @@ export type {
 export { ChatProvider, useChatContext } from "./hooks/ChatProvider.js";
 export type { ChatProviderProps } from "./hooks/ChatProvider.js";
 
+// Model select
+export { ModelSelect } from "./components/ModelSelect.js";
+export type { ModelSelectProps } from "./components/ModelSelect.js";
+export { useModels } from "./hooks/useModels.js";
+export type { ModelEntry, UseModelsReturn } from "./hooks/useModels.js";
+
 // Subcomponentes
 export { Markdown } from "./components/Markdown.js";
 export { StreamingIndicator } from "./components/StreamingIndicator.js";

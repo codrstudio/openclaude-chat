@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { cn } from "../lib/utils.js";
 import { ChatProvider, useChatContext } from "../hooks/ChatProvider.js";
 import { MessageList } from "./MessageList.js";
 import { MessageInput } from "./MessageInput.js";
+import { ModelSelect } from "./ModelSelect.js";
+import { useModels } from "../hooks/useModels.js";
 import type { DisplayRendererMap } from "../display/registry.js";
 import type { Message } from "../types.js";
 
@@ -22,6 +24,8 @@ export interface ChatProps {
   className?: string;
   enableAttachments?: boolean;
   enableVoice?: boolean;
+  /** Mostra combo de selecao de modelo (carregado via GET /models). */
+  enableModelSelect?: boolean;
   fetcher?: typeof fetch;
   emptyState?: React.ReactNode;
 }
@@ -32,9 +36,10 @@ interface ChatContentProps {
   enableAttachments?: boolean;
   enableVoice?: boolean;
   emptyState?: React.ReactNode;
+  bottomSlot?: React.ReactNode;
 }
 
-function ChatContent({ displayRenderers, placeholder, enableAttachments = true, enableVoice = true, emptyState }: ChatContentProps) {
+function ChatContent({ displayRenderers, placeholder, enableAttachments = true, enableVoice = true, emptyState, bottomSlot }: ChatContentProps) {
   const { messages, input, setInput, handleSubmit, isLoading, stop, error, reload } = useChatContext();
 
   return (
@@ -57,6 +62,7 @@ function ChatContent({ displayRenderers, placeholder, enableAttachments = true, 
           placeholder={placeholder}
           enableAttachments={enableAttachments}
           enableVoice={enableVoice}
+          bottomSlot={bottomSlot}
         />
       </div>
     </>
@@ -77,9 +83,27 @@ export function Chat({
   className,
   enableAttachments,
   enableVoice,
+  enableModelSelect,
   fetcher,
   emptyState,
 }: ChatProps) {
+  const { models, defaultModel, isLoading: modelsLoading } = useModels(
+    enableModelSelect ? endpoint : "",
+    enableModelSelect ? fetcher : undefined,
+  );
+  const [selectedModel, setSelectedModel] = useState<string | undefined>(undefined);
+
+  // Resolve o modelo efetivo: selecionado pelo usuario ou default do catalogo
+  const effectiveModel = enableModelSelect
+    ? selectedModel ?? defaultModel ?? undefined
+    : undefined;
+
+  // Memoiza sessionOptions para evitar re-render infinito quando model muda
+  const mergedSessionOptions = useMemo(
+    () => sessionOptions,
+    [sessionOptions],
+  );
+
   return (
     <ChatProvider
       key={sessionId}
@@ -87,8 +111,9 @@ export function Chat({
       token={token}
       sessionId={sessionId}
       initialMessages={initialMessages}
-      sessionOptions={sessionOptions}
+      sessionOptions={mergedSessionOptions}
       turnOptions={turnOptions}
+      model={effectiveModel}
       fetcher={fetcher}
     >
       <div className={cn("flex flex-col h-full bg-background text-foreground", className)}>
@@ -99,6 +124,14 @@ export function Chat({
           enableAttachments={enableAttachments}
           enableVoice={enableVoice}
           emptyState={emptyState}
+          bottomSlot={enableModelSelect ? (
+            <ModelSelect
+              models={models}
+              value={selectedModel ?? defaultModel ?? (models[0]?.id ?? "")}
+              onChange={setSelectedModel}
+              isLoading={modelsLoading}
+            />
+          ) : undefined}
         />
         {footer}
       </div>

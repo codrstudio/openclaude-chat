@@ -23,6 +23,8 @@ export interface MessageInputProps {
   className?: string;
   enableAttachments?: boolean;
   enableVoice?: boolean;
+  /** Slot para conteudo extra abaixo do input (ex: model select). */
+  bottomSlot?: React.ReactNode;
 }
 
 // ── Constants ──
@@ -164,6 +166,7 @@ export function MessageInput({
   className,
   enableAttachments = true,
   enableVoice = true,
+  bottomSlot,
 }: MessageInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -310,7 +313,7 @@ export function MessageInput({
       onDrop={enableAttachments ? handleDrop : undefined}
       className={cn(
         "relative border border-border/50 bg-muted transition-[border-radius] duration-200",
-        isMultiline || attachments.length > 0 ? "rounded-2xl" : "rounded-full",
+        isMultiline || attachments.length > 0 || bottomSlot ? "rounded-2xl" : "rounded-full",
         isDragging && "ring-2 ring-primary/50",
         className,
       )}
@@ -411,6 +414,13 @@ export function MessageInput({
             )}
           </div>
         </div>
+
+        {/* ── Bottom slot (model select, etc.) ── */}
+        {bottomSlot && (
+          <div className="flex items-center justify-end border-t border-border/30 px-3 py-1.5">
+            {bottomSlot}
+          </div>
+        )}
       </div>
 
       {/* Hidden file inputs */}

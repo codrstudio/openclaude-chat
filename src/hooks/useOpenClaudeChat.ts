@@ -71,6 +71,8 @@ export interface UseOpenClaudeChatOptions {
   sessionOptions?: Record<string, unknown>;
   /** Options por turno. Passado como `turnOptions` no body do /prompt. */
   turnOptions?: Record<string, unknown>;
+  /** Modelo selecionado. Enviado como `model` no body de /sessions e /prompt. */
+  model?: string;
   /** Customiza fetch (ex: para injetar credenciais). */
   fetcher?: typeof fetch;
 }
@@ -108,6 +110,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     initialMessages,
     sessionOptions,
     turnOptions,
+    model,
     fetcher,
   } = options;
 
@@ -131,7 +134,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     const res = await doFetch(`${endpoint}/sessions`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ options: sessionOptions ?? {} }),
+      body: JSON.stringify({ options: sessionOptions ?? {}, ...(model ? { model } : {}) }),
     });
     if (!res.ok) {
       throw new Error(`Failed to create session: HTTP ${res.status}`);
@@ -139,7 +142,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     const data = (await res.json()) as { sessionId: string };
     setSessionId(data.sessionId);
     return data.sessionId;
-  }, [sessionId, endpoint, token, sessionOptions, doFetch]);
+  }, [sessionId, endpoint, token, sessionOptions, model, doFetch]);
 
   // ──────────────────────────────────────────────────────────────
   // Stream parser — consome SSE do endpoint /sessions/:id/prompt
@@ -189,7 +192,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
         res = await doFetch(`${endpoint}/sessions/${encodeURIComponent(sid)}/prompt`, {
           method: "POST",
           headers,
-          body: JSON.stringify({ prompt: text, turnOptions }),
+          body: JSON.stringify({ prompt: text, turnOptions, ...(model ? { model } : {}) }),
           signal: ctrl.signal,
         });
       } catch (err) {
@@ -336,9 +339,24 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
         abortRef.current = null;
       }
 
+      // The server may filter out tool_result-only user messages (tool intention
+      // filter in the SDK). Mark any tool calls still in "call" state as completed
+      // so the UI doesn't show a perpetual spinner.
+      let settled = false;
+      for (const part of accumulatedParts) {
+        if (part.type === "tool-invocation") {
+          const tip = part as ToolInvocationPart;
+          if (tip.toolInvocation.state === "call" || tip.toolInvocation.state === "partial-call") {
+            tip.toolInvocation = { ...tip.toolInvocation, state: "result", result: null };
+            settled = true;
+          }
+        }
+      }
+      if (settled) commit();
+
       return { assistantId, partCount: accumulatedParts.length };
     },
-    [endpoint, token, turnOptions, doFetch],
+    [endpoint, token, turnOptions, model, doFetch],
   );
 
   // ──────────────────────────────────────────────────────────────
