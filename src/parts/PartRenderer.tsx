@@ -110,7 +110,9 @@ export const PartRenderer = memo(function PartRenderer({ part, isStreaming, disp
               normalized[k] = v;
             }
           }
-          const rendered = <Renderer {...normalized} />;
+          // key by toolCallId so iframe-based renderers (DisplayReactRenderer)
+          // unmount/remount cleanly when a new tool_use block arrives.
+          const rendered = <Renderer key={toolInvocation.toolCallId} {...normalized} />;
           // NOTE: LazyRender via IntersectionObserver nao funciona bem dentro
           // do virtualized MessageList (itens ficam position:absolute e o
           // observer nao dispara consistente). Renderizamos direto.
