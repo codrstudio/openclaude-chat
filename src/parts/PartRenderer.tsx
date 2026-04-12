@@ -121,11 +121,20 @@ export const PartRenderer = memo(function PartRenderer({ part, isStreaming, disp
       }
 
       if (toolInvocation.state === "result") {
+        if (toolInvocation.result != null) {
+          return (
+            <ToolResult
+              toolName={toolInvocation.toolName}
+              result={toolInvocation.result}
+              isError={toolInvocation.isError}
+            />
+          );
+        }
         return (
-          <ToolResult
+          <ToolActivity
             toolName={toolInvocation.toolName}
-            result={toolInvocation.result}
-            isError={toolInvocation.isError}
+            state="result"
+            args={toolInvocation.args}
           />
         );
       }
