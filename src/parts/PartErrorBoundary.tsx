@@ -1,5 +1,6 @@
 import React from "react";
 import { AlertTriangle } from "lucide-react";
+import { useTranslation } from "../i18n/index.js";
 
 interface State {
   hasError: boolean;
@@ -34,18 +35,25 @@ export class PartErrorBoundary extends React.Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div
-          role="alert"
-          className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive"
-        >
-          <AlertTriangle className="size-3.5 shrink-0 mt-0.5" />
-          <span className="flex-1 min-w-0 break-words font-mono">
-            {this.props.label ? `[${this.props.label}] ` : ""}
-            {this.state.message ?? "Falha ao renderizar bloco"}
-          </span>
-        </div>
+        <ErrorFallback label={this.props.label} message={this.state.message} />
       );
     }
     return this.props.children;
   }
+}
+
+function ErrorFallback({ label, message }: { label?: string; message?: string }) {
+  const { t } = useTranslation();
+  return (
+    <div
+      role="alert"
+      className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive"
+    >
+      <AlertTriangle className="size-3.5 shrink-0 mt-0.5" />
+      <span className="flex-1 min-w-0 break-words font-mono">
+        {label ? `[${label}] ` : ""}
+        {message ?? t("partError.default")}
+      </span>
+    </div>
+  );
 }

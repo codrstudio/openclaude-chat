@@ -11,12 +11,14 @@ import {
   TableRow,
 } from "../ui/table.js";
 import { cn } from "../lib/utils.js";
+import { useTranslation } from "../i18n/index.js";
 
 function formatMoney(value: number, currency = "BRL") {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(value);
 }
 
 export function ComparisonTableRenderer({ title, items, attributes }: DisplayComparison) {
+  const { t } = useTranslation();
   const [bestIdx, setBestIdx] = useState<number | null>(null);
 
   // Auto-detect best value by lowest price if no manual selection
@@ -49,7 +51,7 @@ export function ComparisonTableRenderer({ title, items, attributes }: DisplayCom
                   <button
                     className="flex flex-col items-center gap-0.5 w-full cursor-pointer hover:opacity-80"
                     onClick={() => setBestIdx(i === bestIdx ? null : i)}
-                    title="Marcar como melhor"
+                    title={t("comparison.markBest")}
                   >
                     {i === highlightIdx && (
                       <CheckCircle className="h-3.5 w-3.5 text-primary" />

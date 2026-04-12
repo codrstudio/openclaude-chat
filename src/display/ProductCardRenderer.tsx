@@ -5,8 +5,10 @@ import { Card, CardContent, CardTitle } from "../ui/card.js";
 import { Badge } from "../ui/badge.js";
 import { Button } from "../ui/button.js";
 import { cn } from "../lib/utils.js";
+import { useTranslation } from "../i18n/index.js";
 
 function StarRating({ score, count }: { score: number; count: number }) {
+  const { t } = useTranslation();
   const fullStars = Math.floor(score);
   const hasHalf = score - fullStars >= 0.5;
   const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
@@ -14,7 +16,7 @@ function StarRating({ score, count }: { score: number; count: number }) {
   return (
     <div
       className="flex items-center gap-0.5 text-primary"
-      aria-label={`${score} de 5 estrelas (${count} avaliações)`}
+      aria-label={`${score} ${t("product.rating")} (${count} ${t("product.reviews")})`}
     >
       {Array.from({ length: fullStars }).map((_, i) => (
         <Star key={`f${i}`} size={14} fill="currentColor" />

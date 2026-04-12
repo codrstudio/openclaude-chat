@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "../ui/button.js";
 import { Card } from "../ui/card.js";
 import { cn } from "../lib/utils.js";
+import { useTranslation } from "../i18n/index.js";
 
 type ChoiceButtonsProps = DisplayChoices & {
   onChoiceSelect?: (value: string) => void;
@@ -14,6 +15,7 @@ export function ChoiceButtonsRenderer({
   layout,
   onChoiceSelect,
 }: ChoiceButtonsProps) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<string | null>(null);
 
   function handleSelect(id: string) {
@@ -32,7 +34,7 @@ export function ChoiceButtonsRenderer({
           layout === "list" && "flex flex-col gap-1"
         )}
         role="group"
-        aria-label={question ?? "Escolha uma opção"}
+        aria-label={question ?? t("choice.default")}
       >
         {choices.map((choice) => {
           const isSelected = selected === choice.id;

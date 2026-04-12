@@ -2,6 +2,7 @@ import type { DisplayMap } from "./sdk-types.js";
 import { MapPin } from "lucide-react";
 import { Card } from "../ui/card.js";
 import { Separator } from "../ui/separator.js";
+import { useTranslation } from "../i18n/index.js";
 
 function buildOsmUrl(pins: DisplayMap["pins"], zoom: number): string {
   if (pins.length === 0) {
@@ -21,6 +22,7 @@ function buildOsmUrl(pins: DisplayMap["pins"], zoom: number): string {
 }
 
 export function MapViewRenderer({ title, pins, zoom }: DisplayMap) {
+  const { t } = useTranslation();
   const osmUrl = buildOsmUrl(pins, zoom);
 
   return (
@@ -35,7 +37,7 @@ export function MapViewRenderer({ title, pins, zoom }: DisplayMap) {
         <iframe
           src={osmUrl}
           className="w-full h-full border-0"
-          title={title ?? "Mapa OpenStreetMap"}
+          title={title ?? t("map.title")}
           loading="lazy"
           referrerPolicy="no-referrer"
           sandbox="allow-scripts allow-same-origin"
@@ -48,7 +50,7 @@ export function MapViewRenderer({ title, pins, zoom }: DisplayMap) {
       {pins.length > 0 && (
         <>
           <Separator />
-          <ul className="p-3 space-y-2" aria-label="Locais no mapa">
+          <ul className="p-3 space-y-2" aria-label={t("map.locations")}>
             {pins.map((pin, i) => (
               <li key={i} className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 shrink-0 text-primary mt-0.5" aria-hidden="true" />

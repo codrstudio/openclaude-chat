@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/button.js";
 import { Card } from "../ui/card.js";
+import { useTranslation } from "../i18n/index.js";
 
 function getFileIcon(type: string) {
   const mime = type.toLowerCase();
@@ -30,6 +31,7 @@ function formatSize(bytes: number): string {
 }
 
 export function FileCardRenderer({ name, type, size, url }: DisplayFile) {
+  const { t } = useTranslation();
   const Icon = getFileIcon(type);
 
   return (
@@ -45,7 +47,7 @@ export function FileCardRenderer({ name, type, size, url }: DisplayFile) {
       </div>
       {url && (
         <Button variant="ghost" size="icon" asChild>
-          <a href={url} download={name} aria-label={`Baixar ${name}`}>
+          <a href={url} download={name} aria-label={`${t("file.download")} ${name}`}>
             <Download className="h-4 w-4" />
           </a>
         </Button>

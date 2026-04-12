@@ -1,5 +1,6 @@
 import { Check, Download, FileText, FilePlus, FolderSearch, Globe, Loader2, Pencil, Search, Terminal, Wrench, type LucideIcon } from "lucide-react";
 import { cn } from "../lib/utils.js";
+import { useTranslation } from "../i18n/index.js";
 
 export type ToolActivityState = "call" | "partial-call" | "result";
 
@@ -48,6 +49,7 @@ function formatArgs(toolName: string, args?: Record<string, unknown>): string | 
 }
 
 export function ToolActivity({ toolName, state, args, className, iconMap }: ToolActivityProps) {
+  const { t } = useTranslation();
   const mergedIconMap = iconMap ? { ...defaultToolIconMap, ...iconMap } : defaultToolIconMap;
   const Icon = resolveIcon(toolName, mergedIconMap);
   const isActive = state === "call" || state === "partial-call";
@@ -68,9 +70,9 @@ export function ToolActivity({ toolName, state, args, className, iconMap }: Tool
       )}
       <span className="ml-auto text-muted-foreground">
         {isActive ? (
-          <Loader2 size={14} className="animate-spin" aria-label="Executando..." />
+          <Loader2 size={14} className="animate-spin" aria-label={t("tool.running")} />
         ) : (
-          <Check size={14} aria-label="Concluido" />
+          <Check size={14} aria-label={t("tool.done")} />
         )}
       </span>
     </div>

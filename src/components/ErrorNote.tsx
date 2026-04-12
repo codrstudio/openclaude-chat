@@ -1,5 +1,6 @@
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { cn } from "../lib/utils.js";
+import { useTranslation } from "../i18n/index.js";
 
 export interface ErrorNoteProps {
   message?: string;
@@ -8,6 +9,7 @@ export interface ErrorNoteProps {
 }
 
 export function ErrorNote({ message, onRetry, className }: ErrorNoteProps) {
+  const { t } = useTranslation();
   return (
     <div
       role="alert"
@@ -18,7 +20,7 @@ export function ErrorNote({ message, onRetry, className }: ErrorNoteProps) {
     >
       <AlertTriangle className="size-4 shrink-0 mt-0.5" />
       <span className="flex-1 min-w-0 break-words">
-        {message ?? "Falha ao processar mensagem"}
+        {message ?? t("error.default")}
       </span>
       {onRetry && (
         <button
@@ -27,7 +29,7 @@ export function ErrorNote({ message, onRetry, className }: ErrorNoteProps) {
           className="shrink-0 inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
         >
           <RotateCcw className="size-3.5" />
-          Tentar novamente
+          {t("error.retry")}
         </button>
       )}
     </div>

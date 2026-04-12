@@ -6,12 +6,14 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { cn } from "../lib/utils";
+import { useTranslation } from "../i18n/index.js";
 
 function formatPrice(value: number, currency: string): string {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(value);
 }
 
 export function CarouselRenderer({ title, items }: DisplayCarousel) {
+  const { t } = useTranslation();
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, dragFree: false });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -49,7 +51,7 @@ export function CarouselRenderer({ title, items }: DisplayCarousel) {
           className="rounded-full shrink-0"
           onClick={scrollPrev}
           disabled={!canScrollPrev}
-          aria-label="Anterior"
+          aria-label={t("carousel.previous")}
           type="button"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -77,7 +79,7 @@ export function CarouselRenderer({ title, items }: DisplayCarousel) {
           className="rounded-full shrink-0"
           onClick={scrollNext}
           disabled={!canScrollNext}
-          aria-label="Próximo"
+          aria-label={t("carousel.next")}
           type="button"
         >
           <ChevronRight className="h-4 w-4" />
@@ -85,7 +87,7 @@ export function CarouselRenderer({ title, items }: DisplayCarousel) {
       </div>
 
       {items.length > 1 && (
-        <div className="flex items-center justify-center gap-1.5" role="tablist" aria-label="Slides">
+        <div className="flex items-center justify-center gap-1.5" role="tablist" aria-label={t("carousel.slides")}>
           {items.map((_, index) => (
             <button
               key={index}

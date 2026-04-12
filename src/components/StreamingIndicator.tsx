@@ -1,8 +1,11 @@
+import { useTranslation } from "../i18n/index.js";
+
 export function StreamingIndicator() {
+  const { t } = useTranslation();
   return (
     <span
       className="inline-flex items-end gap-1.5 py-1 mt-4"
-      aria-label="Gerando resposta..."
+      aria-label={t("streaming.generating")}
       role="status"
     >
       <span className="size-1 rounded-full bg-primary animate-[streaming-bounce_1.2s_ease-in-out_infinite_0ms]" />

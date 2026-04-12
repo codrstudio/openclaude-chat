@@ -9,6 +9,7 @@ import { resolveDisplayRenderer } from "../display/registry.js";
 import type { DisplayRendererMap } from "../display/registry.js";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "../ui/collapsible.js";
 import { cn } from "../lib/utils.js";
+import { useTranslation } from "../i18n/index.js";
 import type { MessagePart, TextPart, ReasoningPart, ToolInvocationPart } from "../types.js";
 
 const HEAVY_RENDERERS = new Set([
@@ -25,6 +26,7 @@ export interface PartRendererProps {
 // ─── Attachment sub-components ────────────────────────────────────────────────
 
 function AttachmentTextBlock({ filename, content }: { filename: string; content: string }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const lines = content.split("\n");
   const preview = lines.slice(0, 3).join("\n") + (lines.length > 3 && !open ? "\n…" : "");
@@ -35,7 +37,7 @@ function AttachmentTextBlock({ filename, content }: { filename: string; content:
         <Paperclip className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         <span className="flex-1 truncate font-medium">{filename}</span>
         <CollapsibleTrigger asChild>
-          <button type="button" className="text-muted-foreground hover:text-foreground transition-colors" aria-label={open ? "Recolher" : "Expandir"}>
+          <button type="button" className="text-muted-foreground hover:text-foreground transition-colors" aria-label={open ? t("part.collapse") : t("part.expand")}>
             <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")} />
           </button>
         </CollapsibleTrigger>

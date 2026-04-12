@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "../ui/table.js";
 import { cn } from "../lib/utils.js";
+import { useTranslation } from "../i18n/index.js";
 
 function formatCell(
   value: string | number | null,
@@ -34,6 +35,7 @@ function formatCell(
 }
 
 export function SpreadsheetRenderer({ title, headers, rows, format }: DisplaySpreadsheet) {
+  const { t } = useTranslation();
   const moneyColumns = format?.moneyColumns ?? [];
   const percentColumns = format?.percentColumns ?? [];
 
@@ -45,7 +47,7 @@ export function SpreadsheetRenderer({ title, headers, rows, format }: DisplaySpr
         <Table aria-readonly="true">
           <TableHeader>
             <TableRow>
-              <TableHead className="text-muted-foreground font-normal text-center w-10" aria-label="Linha" />
+              <TableHead className="text-muted-foreground font-normal text-center w-10" aria-label={t("spreadsheet.row")} />
               {headers.map((h, i) => (
                 <TableHead key={i} className="font-semibold">
                   {h}

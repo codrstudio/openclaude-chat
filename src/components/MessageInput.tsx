@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { Send, Square, Plus, Mic, X, Camera, Paperclip, Image as ImageIcon, CircleStop, Loader2 } from "lucide-react";
 import { Button } from "../ui/button.js";
 import { cn } from "../lib/utils.js";
+import { useTranslation } from "../i18n/index.js";
 
 // ── Types ──
 
@@ -93,6 +94,7 @@ function formatTime(seconds: number): string {
 // ── Attachment Preview ──
 
 function AttachmentPreview({ attachment, onRemove }: { attachment: Attachment; onRemove: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="relative group shrink-0">
       {attachment.type === "image" && attachment.preview ? (
@@ -109,7 +111,7 @@ function AttachmentPreview({ attachment, onRemove }: { attachment: Attachment; o
         type="button"
         onClick={onRemove}
         className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-foreground text-background flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-        aria-label="Remover"
+        aria-label={t("input.remove")}
       >
         <X className="h-3 w-3" />
       </button>
@@ -122,6 +124,7 @@ function AttachmentPreview({ attachment, onRemove }: { attachment: Attachment; o
 function PlusMenu({ onFile, onCamera, onGallery, onClose }: {
   onFile: () => void; onCamera: () => void; onGallery: () => void; onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -135,9 +138,9 @@ function PlusMenu({ onFile, onCamera, onGallery, onClose }: {
   return (
     <div ref={menuRef} className="absolute bottom-full left-0 mb-2 rounded-xl border border-border bg-popover text-popover-foreground shadow-lg py-1 min-w-[160px] z-10">
       {[
-        { icon: Paperclip, label: "Arquivo", onClick: onFile },
-        { icon: Camera, label: "Camera", onClick: onCamera },
-        { icon: ImageIcon, label: "Galeria", onClick: onGallery },
+        { icon: Paperclip, label: t("input.file"), onClick: onFile },
+        { icon: Camera, label: t("input.camera"), onClick: onCamera },
+        { icon: ImageIcon, label: t("input.gallery"), onClick: onGallery },
       ].map((item) => (
         <button
           key={item.label}
@@ -162,12 +165,14 @@ export function MessageInput({
   isLoading,
   isUploading = false,
   stop,
-  placeholder = "Caixa de mensagem...",
+  placeholder,
   className,
   enableAttachments = true,
   enableVoice = true,
   bottomSlot,
 }: MessageInputProps) {
+  const { t } = useTranslation();
+  const resolvedPlaceholder = placeholder ?? t("input.placeholder");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -321,14 +326,14 @@ export function MessageInput({
       {/* ── Drag overlay ── */}
       {isDragging && (
         <div className="absolute inset-0 z-10 flex items-center justify-center rounded-[inherit] bg-primary/5 border-2 border-dashed border-primary/30">
-          <span className="text-sm text-primary font-medium">Solte aqui</span>
+          <span className="text-sm text-primary font-medium">{t("input.dropHere")}</span>
         </div>
       )}
 
       {/* ── Recording overlay ── */}
       {isRecording && (
         <div className="flex items-center gap-3 px-3 py-2">
-          <Button type="button" variant="ghost" size="icon" onClick={cancelRecording} className="h-8 w-8 rounded-full shrink-0 text-muted-foreground" aria-label="Cancelar">
+          <Button type="button" variant="ghost" size="icon" onClick={cancelRecording} className="h-8 w-8 rounded-full shrink-0 text-muted-foreground" aria-label={t("input.cancel")}>
             <X className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-2 flex-1">
@@ -340,7 +345,7 @@ export function MessageInput({
               ))}
             </div>
           </div>
-          <Button type="button" size="icon" onClick={stopRecording} className="h-8 w-8 rounded-full shrink-0" aria-label="Parar">
+          <Button type="button" size="icon" onClick={stopRecording} className="h-8 w-8 rounded-full shrink-0" aria-label={t("input.stop")}>
             <CircleStop className="h-4 w-4" />
           </Button>
         </div>
@@ -357,7 +362,7 @@ export function MessageInput({
             {isUploading && (
               <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-xs text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin shrink-0" />
-                <span>Enviando arquivos...</span>
+                <span>{t("input.uploading")}</span>
               </div>
             )}
           </div>
@@ -368,7 +373,7 @@ export function MessageInput({
           {/* Left: Plus button */}
           {enableAttachments && (
             <div className="relative shrink-0">
-              <Button type="button" variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setShowMenu(!showMenu)} aria-label="Adicionar">
+              <Button type="button" variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setShowMenu(!showMenu)} aria-label={t("input.add")}>
                 <Plus className="h-4 w-4" />
               </Button>
               {showMenu && (
@@ -389,26 +394,26 @@ export function MessageInput({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             onPaste={enableAttachments ? handlePaste : undefined}
-            placeholder={placeholder}
+            placeholder={resolvedPlaceholder}
             rows={1}
             disabled={isLoading}
-            aria-label="Mensagem"
+            aria-label={t("input.message")}
             className="flex-1 min-w-0 bg-transparent text-foreground text-sm resize-none outline-none placeholder:text-muted-foreground leading-6 py-1 px-2"
           />
 
           {/* Right: Action buttons */}
           <div className="flex items-center gap-0.5 shrink-0">
             {enableVoice && !hasContent && (
-              <Button type="button" variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground" onClick={startRecording} aria-label="Gravar audio">
+              <Button type="button" variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground" onClick={startRecording} aria-label={t("input.record")}>
                 <Mic className="h-4 w-4" />
               </Button>
             )}
             {isLoading && stop ? (
-              <Button type="button" variant="ghost" size="icon" onClick={stop} className="h-8 w-8 rounded-full" aria-label="Parar geração">
+              <Button type="button" variant="ghost" size="icon" onClick={stop} className="h-8 w-8 rounded-full" aria-label={t("input.stopGeneration")}>
                 <Square className="h-4 w-4" />
               </Button>
             ) : (
-              <Button type="button" size="icon" onClick={onSubmit} disabled={!hasContent || !!isLoading} className="h-8 w-8 rounded-full" aria-label="Enviar mensagem">
+              <Button type="button" size="icon" onClick={onSubmit} disabled={!hasContent || !!isLoading} className="h-8 w-8 rounded-full" aria-label={t("input.send")}>
                 <Send className="h-4 w-4" />
               </Button>
             )}

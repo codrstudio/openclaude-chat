@@ -7,6 +7,7 @@ import { PartRenderer } from "../parts/PartRenderer.js";
 import { PartErrorBoundary } from "../parts/PartErrorBoundary.js";
 import type { DisplayRendererMap } from "../display/registry.js";
 import { Copy, Check } from "lucide-react";
+import { useTranslation } from "../i18n/index.js";
 
 export interface MessageBubbleProps {
   message: Message;
@@ -25,6 +26,7 @@ function extractText(message: Message): string {
 }
 
 function CopyButton({ text }: { text: string }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
@@ -42,11 +44,16 @@ function CopyButton({ text }: { text: string }) {
         "text-muted-foreground/50 opacity-0 group-hover/bubble:opacity-100",
         "hover:bg-muted/50 hover:text-muted-foreground",
       )}
-      aria-label={copied ? "Copiado" : "Copiar mensagem"}
+      aria-label={copied ? t("bubble.copied") : t("bubble.copy")}
     >
       {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
     </button>
   );
+}
+
+function EmptyResponse() {
+  const { t } = useTranslation();
+  return <span className="text-xs italic text-muted-foreground">{t("bubble.emptyResponse")}</span>;
 }
 
 export const MessageBubble = memo(function MessageBubble({ message, isStreaming, displayRenderers, className }: MessageBubbleProps) {
@@ -82,7 +89,7 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
           : hasText
             ? <Markdown>{message.content}</Markdown>
             : isEmptyAssistant
-              ? <span className="text-xs italic text-muted-foreground">(resposta vazia)</span>
+              ? <EmptyResponse />
               : null
         }
         {isStreaming && !isUser && <StreamingIndicator />}

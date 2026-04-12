@@ -3,8 +3,10 @@ import type { DisplayGallery } from "./sdk-types.js";
 import { ZoomIn } from "lucide-react";
 import { cn } from "../lib/utils.js";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog.js";
+import { useTranslation } from "../i18n/index.js";
 
 export function GalleryRenderer({ title, images }: DisplayGallery) {
+  const { t } = useTranslation();
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
   const activeImage = lightboxIdx !== null ? images[lightboxIdx] : null;
@@ -19,7 +21,7 @@ export function GalleryRenderer({ title, images }: DisplayGallery) {
             key={i}
             className="relative group cursor-pointer rounded-md overflow-hidden"
             onClick={() => setLightboxIdx(i)}
-            aria-label={img.alt ?? `Imagem ${i + 1}`}
+            aria-label={img.alt ?? `${t("gallery.imageN")} ${i + 1}`}
           >
             <img
               src={img.url}
@@ -42,7 +44,7 @@ export function GalleryRenderer({ title, images }: DisplayGallery) {
       <Dialog open={lightboxIdx !== null} onOpenChange={(open) => { if (!open) setLightboxIdx(null); }}>
         <DialogContent className={cn("max-w-4xl p-0 bg-background/95")}>
           <DialogTitle className="sr-only">
-            {activeImage?.alt ?? "Visualizador de imagem"}
+            {activeImage?.alt ?? t("image.viewer")}
           </DialogTitle>
           {activeImage && (
             <div className="flex flex-col">

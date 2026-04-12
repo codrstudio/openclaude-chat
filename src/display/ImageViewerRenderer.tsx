@@ -4,8 +4,10 @@ import { ZoomIn, ZoomOut, RotateCcw, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog.js";
 import { Button } from "../ui/button.js";
 import { cn } from "../lib/utils.js";
+import { useTranslation } from "../i18n/index.js";
 
 export function ImageViewerRenderer({ url, alt, caption, width, height }: DisplayImage) {
+  const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
 
@@ -19,7 +21,7 @@ export function ImageViewerRenderer({ url, alt, caption, width, height }: Displa
       <button
         className="relative group cursor-pointer rounded-md overflow-hidden inline-block"
         onClick={handleOpen}
-        aria-label={`Ampliar imagem${alt ? `: ${alt}` : ""}`}
+        aria-label={`${t("image.enlarge")}${alt ? `: ${alt}` : ""}`}
       >
         <img
           src={url}
@@ -41,7 +43,7 @@ export function ImageViewerRenderer({ url, alt, caption, width, height }: Displa
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-4xl p-0 bg-background/95 overflow-hidden">
-          <DialogTitle className="sr-only">{alt ?? "Visualizador de imagem"}</DialogTitle>
+          <DialogTitle className="sr-only">{alt ?? t("image.viewer")}</DialogTitle>
 
           <div className="flex flex-col">
             <div className="flex items-center gap-1 p-2 border-b border-border">
@@ -49,7 +51,7 @@ export function ImageViewerRenderer({ url, alt, caption, width, height }: Displa
                 variant="ghost"
                 size="icon"
                 onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))}
-                aria-label="Reduzir zoom"
+                aria-label={t("image.zoomOut")}
                 disabled={zoom <= 0.25}
               >
                 <ZoomOut className="h-4 w-4" />
@@ -63,7 +65,7 @@ export function ImageViewerRenderer({ url, alt, caption, width, height }: Displa
                 variant="ghost"
                 size="icon"
                 onClick={() => setZoom((z) => Math.min(4, z + 0.25))}
-                aria-label="Aumentar zoom"
+                aria-label={t("image.zoomIn")}
                 disabled={zoom >= 4}
               >
                 <ZoomIn className="h-4 w-4" />
@@ -73,7 +75,7 @@ export function ImageViewerRenderer({ url, alt, caption, width, height }: Displa
                 variant="ghost"
                 size="icon"
                 onClick={() => setZoom(1)}
-                aria-label="Resetar zoom"
+                aria-label={t("image.resetZoom")}
               >
                 <RotateCcw className="h-4 w-4" />
               </Button>
@@ -84,7 +86,7 @@ export function ImageViewerRenderer({ url, alt, caption, width, height }: Displa
                 variant="ghost"
                 size="icon"
                 onClick={() => setDialogOpen(false)}
-                aria-label="Fechar"
+                aria-label={t("image.close")}
               >
                 <X className="h-4 w-4" />
               </Button>
