@@ -19,6 +19,7 @@ import { ImageViewerRenderer } from "./ImageViewerRenderer.js";
 import { LinkPreviewRenderer } from "./LinkPreviewRenderer.js";
 import { MapViewRenderer } from "./MapViewRenderer.js";
 import { ChoiceButtonsRenderer } from "./ChoiceButtonsRenderer.js";
+import { DisplayReactRenderer } from "./DisplayReactRenderer.js";
 
 export type DisplayActionName =
   | "metric"
@@ -39,7 +40,8 @@ export type DisplayActionName =
   | "map"
   | "code"
   | "progress"
-  | "steps";
+  | "steps"
+  | "react";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DisplayRendererMap = Partial<Record<string, ComponentType<any>>>;
@@ -69,6 +71,7 @@ export const defaultDisplayRenderers: Record<DisplayActionName, ComponentType<an
   code: CodeBlockRenderer,
   progress: ProgressStepsRenderer,
   steps: StepTimelineRenderer,
+  react: DisplayReactRenderer,
 };
 
 export function resolveDisplayRenderer(
