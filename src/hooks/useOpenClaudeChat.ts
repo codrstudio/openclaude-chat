@@ -75,6 +75,12 @@ export interface UseOpenClaudeChatOptions {
   model?: string;
   /** Customiza fetch (ex: para injetar credenciais). */
   fetcher?: typeof fetch;
+  /**
+   * Timeout maximo (ms) para um turno completo. Safety net para evitar loading
+   * infinito caso o servidor mantenha o stream vivo com pings mas nunca resolva.
+   * Default: 600_000 (10 min).
+   */
+  maxTurnMs?: number;
 }
 
 export interface UseOpenClaudeChatReturn {
@@ -112,6 +118,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     turnOptions,
     model,
     fetcher,
+    maxTurnMs = 600_000,
   } = options;
 
   const [sessionId, setSessionId] = useState<string | null>(providedSessionId ?? null);
@@ -150,7 +157,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
   // o numero de partes acumuladas. O chamador decide se isso configura erro
   // (ex: zero partes = resposta vazia, mesmo com HTTP 200).
   const streamPrompt = useCallback(
-    async (sid: string, text: string): Promise<{ assistantId: string; partCount: number }> => {
+    async (sid: string, text: string, assistantId: string): Promise<{ partCount: number; badFrames: number }> => {
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
         Accept: "text/event-stream",
@@ -177,14 +184,6 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
         if (stallTimer) clearTimeout(stallTimer);
         stallTimer = null;
       };
-
-      // Cria placeholder assistant ANTES do fetch — garante feedback visual imediato
-      // mesmo em caso de rede lenta ou erro no fetch.
-      const assistantId = `asst-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      setMessages((prev) => [
-        ...prev,
-        { id: assistantId, role: "assistant", content: "", parts: [] },
-      ]);
 
       armStall();
       let res: Response;
@@ -232,6 +231,8 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
         });
       };
 
+      let badFrames = 0;
+
       const handleEvent = (eventName: string, dataStr: string) => {
         if (eventName === "error") {
           try {
@@ -253,10 +254,24 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
         try {
           msg = JSON.parse(dataStr) as SDKMessage;
         } catch {
+          badFrames++;
+          console.warn("[chat] frame SSE com JSON invalido ignorado:", dataStr.slice(0, 200));
           return;
         }
 
         if (msg.type === "assistant") {
+          // Signal 1: nova mensagem do assistente chegou — todas as tools
+          // anteriores ja terminaram (execucao sequencial). Assenta qualquer
+          // tool_use ainda em "call"/"partial-call" para remover o spinner.
+          for (const p of accumulatedParts) {
+            if (p.type === "tool-invocation") {
+              const tip = p as ToolInvocationPart;
+              if (tip.toolInvocation.state === "call" || tip.toolInvocation.state === "partial-call") {
+                tip.toolInvocation = { ...tip.toolInvocation, state: "result", result: null };
+              }
+            }
+          }
+
           const assistant = msg as SDKAssistantMessage;
           const blocks = assistant.message?.content ?? [];
           for (const block of blocks) {
@@ -337,24 +352,23 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
       } finally {
         disarmStall();
         abortRef.current = null;
-      }
 
-      // The server may filter out tool_result-only user messages (tool intention
-      // filter in the SDK). Mark any tool calls still in "call" state as completed
-      // so the UI doesn't show a perpetual spinner.
-      let settled = false;
-      for (const part of accumulatedParts) {
-        if (part.type === "tool-invocation") {
-          const tip = part as ToolInvocationPart;
-          if (tip.toolInvocation.state === "call" || tip.toolInvocation.state === "partial-call") {
-            tip.toolInvocation = { ...tip.toolInvocation, state: "result", result: null };
-            settled = true;
+        // Signal 2: stream terminou (sucesso, erro, abort, timeout) — assenta
+        // qualquer tool_use residual para que o spinner nunca fique preso.
+        let settled = false;
+        for (const part of accumulatedParts) {
+          if (part.type === "tool-invocation") {
+            const tip = part as ToolInvocationPart;
+            if (tip.toolInvocation.state === "call" || tip.toolInvocation.state === "partial-call") {
+              tip.toolInvocation = { ...tip.toolInvocation, state: "result", result: null };
+              settled = true;
+            }
           }
         }
+        if (settled) commit();
       }
-      if (settled) commit();
 
-      return { assistantId, partCount: accumulatedParts.length };
+      return { partCount: accumulatedParts.length, badFrames };
     },
     [endpoint, token, turnOptions, model, doFetch],
   );
@@ -398,24 +412,36 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
       ]);
 
       setIsLoading(true);
-      // NOTE: removido o `HARD_LIMIT_MS` do turno inteiro. Em chat agentico o
-      // agente pode pensar/rodar tools por minutos sem ser uma falha. A unica
-      // razao para abortar e:
-      //   - usuario clicou stop() (flag __userStop)
-      //   - stall watchdog (sem nenhum byte SSE em STALL_MS, incluindo pings
-      //     do servidor — heartbeat server-push e como sabemos que a sessao
-      //     ainda esta viva mesmo durante pausas longas do LLM)
-      //   - servidor emitiu `event: error` ou fechou o stream com 0 partes
 
-      let assistantIdForCleanup: string | null = null;
+      // Cria placeholder assistant ANTES de qualquer I/O — garante que o
+      // assistantId esta disponivel para cleanup mesmo se ensureSession ou
+      // streamPrompt falharem antes de retornar.
+      const assistantId = `asst-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      setMessages((prev) => [
+        ...prev,
+        { id: assistantId, role: "assistant", content: "", parts: [] },
+      ]);
+
+      // Safety net: timeout total do turno. Diferente do stall watchdog (que
+      // reseta a cada byte recebido), este timer e absoluto — se o turno
+      // inteiro exceder maxTurnMs, abortamos. Evita loading infinito quando
+      // o servidor envia pings mas nunca resolve.
+      let turnTimer: ReturnType<typeof setTimeout> | null = null;
+
       try {
+        turnTimer = setTimeout(() => {
+          try { abortRef.current?.abort(new Error("turn-timeout")); } catch { /* noop */ }
+        }, maxTurnMs);
+
         const sid = await ensureSession();
-        const { assistantId, partCount } = await streamPrompt(sid, trimmed);
-        assistantIdForCleanup = assistantId;
+        const { partCount, badFrames } = await streamPrompt(sid, trimmed, assistantId);
         if (partCount === 0) {
           // Servidor fechou o stream sem emitir nenhum bloco — erro "macio".
+          const detail = badFrames > 0
+            ? ` (${badFrames} frame(s) SSE com JSON invalido foram descartados)`
+            : "";
           throw new Error(
-            "O servidor nao retornou nenhum conteudo. Verifique se o provider de LLM esta configurado.",
+            `O servidor nao retornou nenhum conteudo.${detail} Verifique se o provider de LLM esta configurado.`,
           );
         }
       } catch (err) {
@@ -430,12 +456,13 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
               : e.message || "Falha desconhecida ao processar mensagem.";
           setError(new Error(msg));
         }
-        dropEmptyAssistant(assistantIdForCleanup);
+        dropEmptyAssistant(assistantId);
       } finally {
+        if (turnTimer) clearTimeout(turnTimer);
         setIsLoading(false);
       }
     },
-    [isLoading, ensureSession, streamPrompt, dropEmptyAssistant],
+    [isLoading, maxTurnMs, ensureSession, streamPrompt, dropEmptyAssistant],
   );
 
   const handleSubmit = useCallback(
