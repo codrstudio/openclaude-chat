@@ -78,5 +78,27 @@ export { ChoiceButtonsRenderer } from "./display/ChoiceButtonsRenderer.js";
 export { defaultDisplayRenderers, resolveDisplayRenderer } from "./display/registry.js";
 export type { DisplayRendererMap, DisplayActionName } from "./display/registry.js";
 
+// History
+export { History } from "./components/History.js";
+export type { HistoryProps } from "./components/History.js";
+
+export { HistoryProvider, useHistoryContext } from "./hooks/HistoryProvider.js";
+export type { HistoryProviderProps, HistoryContextValue } from "./hooks/HistoryProvider.js";
+
+export type { Conversation, ConversationGroup } from "./components/history/types.js";
+export { createLocalStorageTransport, writeMessages } from "./components/history/useHistoryData.js";
+
+// Transport
+export { createDefaultTransport } from "./transport.js";
+export type { ChatTransport, ConversationDetail } from "./transport.js";
+
+// i18n
+export { LocaleProvider, useTranslation, supportedLocales, defaultLocale, resolveLocale } from "./i18n/index.js";
+export type { LocaleProviderProps, LocaleSlug, LocaleInfo, TranslationKeys } from "./i18n/index.js";
+
+// Locale select
+export { LocaleSelect } from "./components/LocaleSelect.js";
+export type { LocaleSelectProps } from "./components/LocaleSelect.js";
+
 // useIsMobile helper reuse
 export { useIsMobile } from "./hooks/useIsMobile.js";
