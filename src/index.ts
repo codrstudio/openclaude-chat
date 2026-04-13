@@ -9,6 +9,7 @@ export type {
   ReasoningPart,
   ToolInvocationPart,
   ToolInvocationState,
+  TurnMetadata,
 } from "./types.js";
 
 // Componente principal
@@ -52,6 +53,8 @@ export { ToolActivity, defaultToolIconMap } from "./parts/ToolActivity.js";
 export type { ToolActivityProps, ToolActivityState } from "./parts/ToolActivity.js";
 export { ToolResult } from "./parts/ToolResult.js";
 export type { ToolResultProps } from "./parts/ToolResult.js";
+export { TaskCard } from "./parts/TaskCard.js";
+export type { TaskCardProps, TaskStatus } from "./parts/TaskCard.js";
 
 // Display renderers
 export { AlertRenderer } from "./display/AlertRenderer.js";
@@ -88,13 +91,17 @@ export type { HistoryProviderProps, HistoryContextValue } from "./hooks/HistoryP
 export type { Conversation, ConversationGroup } from "./components/history/types.js";
 export { createLocalStorageTransport, writeMessages } from "./components/history/useHistoryData.js";
 
+// SDK conversion
+export { convertSDKMessages, extractTextFromParts } from "./lib/sdk-to-message.js";
+export type { SDKMessage, SDKAssistantMessage, SDKUserMessage, SDKResultMessage } from "./lib/sdk-to-message.js";
+
 // Transport
 export { createDefaultTransport } from "./transport.js";
-export type { ChatTransport, ConversationDetail } from "./transport.js";
+export type { ChatTransport, ConversationDetail, GetMessagesParams, GetMessagesResult } from "./transport.js";
 
 // i18n
-export { LocaleProvider, useTranslation, supportedLocales, defaultLocale, resolveLocale } from "./i18n/index.js";
-export type { LocaleProviderProps, LocaleSlug, LocaleInfo, TranslationKeys } from "./i18n/index.js";
+export { LocaleProvider, useTranslation, builtInLocales, supportedLocales, defaultLocale, resolveLocale } from "./i18n/index.js";
+export type { LocaleProviderProps, LocaleSlug, BuiltInLocale, LocaleInfo, TranslationKeys, CustomMessages, CustomLocaleInfo } from "./i18n/index.js";
 
 // Locale select
 export { LocaleSelect } from "./components/LocaleSelect.js";
