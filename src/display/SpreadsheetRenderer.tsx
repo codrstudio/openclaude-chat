@@ -14,28 +14,29 @@ import { useTranslation } from "../i18n/index.js";
 function formatCell(
   value: string | number | null,
   colIndex: number,
+  locale: string,
   moneyColumns: number[] = [],
   percentColumns: number[] = [],
 ): string {
   if (value === null || value === undefined) return "";
   if (typeof value === "number") {
     if (moneyColumns.includes(colIndex)) {
-      return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+      return new Intl.NumberFormat(locale, { style: "currency", currency: "BRL" }).format(value);
     }
     if (percentColumns.includes(colIndex)) {
-      return new Intl.NumberFormat("pt-BR", {
+      return new Intl.NumberFormat(locale, {
         style: "percent",
         minimumFractionDigits: 1,
         maximumFractionDigits: 2,
       }).format(value / 100);
     }
-    return new Intl.NumberFormat("pt-BR").format(value);
+    return new Intl.NumberFormat(locale).format(value);
   }
   return String(value);
 }
 
 export function SpreadsheetRenderer({ title, headers, rows, format }: DisplaySpreadsheet) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const moneyColumns = format?.moneyColumns ?? [];
   const percentColumns = format?.percentColumns ?? [];
 
@@ -73,7 +74,7 @@ export function SpreadsheetRenderer({ title, headers, rows, format }: DisplaySpr
                         (isMoney || isPercent || isNumber) && "text-right font-mono text-sm"
                       )}
                     >
-                      {formatCell(cell, ci, moneyColumns, percentColumns)}
+                      {formatCell(cell, ci, locale, moneyColumns, percentColumns)}
                     </TableCell>
                   );
                 })}

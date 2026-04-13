@@ -8,12 +8,8 @@ import { Card, CardContent } from "../ui/card";
 import { cn } from "../lib/utils";
 import { useTranslation } from "../i18n/index.js";
 
-function formatPrice(value: number, currency: string): string {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(value);
-}
-
 export function CarouselRenderer({ title, items }: DisplayCarousel) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, dragFree: false });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -111,6 +107,7 @@ export function CarouselRenderer({ title, items }: DisplayCarousel) {
 type CarouselItem = DisplayCarousel["items"][number];
 
 function CarouselCard({ item }: { item: CarouselItem }) {
+  const { locale } = useTranslation();
   return (
     <Card className="overflow-hidden">
       {item.image && (
@@ -125,7 +122,7 @@ function CarouselCard({ item }: { item: CarouselItem }) {
         )}
         {item.price && (
           <p className="text-sm font-bold text-foreground">
-            {formatPrice(item.price.value, item.price.currency)}
+            {new Intl.NumberFormat(locale, { style: "currency", currency: item.price.currency }).format(item.price.value)}
           </p>
         )}
         {item.badges && item.badges.length > 0 && (

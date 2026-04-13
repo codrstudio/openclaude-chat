@@ -30,10 +30,6 @@ function StarRating({ score, count }: { score: number; count: number }) {
   );
 }
 
-function formatMoney(value: number, currency = "BRL") {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(value);
-}
-
 export function ProductCardRenderer({
   title,
   image,
@@ -44,7 +40,10 @@ export function ProductCardRenderer({
   url,
   description,
 }: DisplayProduct) {
+  const { t, locale } = useTranslation();
   const [imgError, setImgError] = useState(false);
+  const formatMoney = (value: number, currency = "BRL") =>
+    new Intl.NumberFormat(locale, { style: "currency", currency }).format(value);
 
   const discount =
     price && originalPrice && originalPrice.value > price.value
@@ -104,7 +103,7 @@ export function ProductCardRenderer({
         {url && (
           <Button className="w-full" size="sm" asChild>
             <a href={url} target="_blank" rel="noopener noreferrer">
-              Ver produto
+              {t("product.viewProduct")}
             </a>
           </Button>
         )}

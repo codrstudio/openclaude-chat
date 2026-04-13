@@ -5,21 +5,22 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from ".
 import { ScrollArea, ScrollBar } from "../ui/scroll-area.js";
 import { Button } from "../ui/button.js";
 import { Badge } from "../ui/badge.js";
+import { useTranslation } from "../i18n/index.js";
 
 type SortDir = "asc" | "desc";
 
-function formatMoney(value: number, currency = "BRL") {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(value);
+function formatMoney(value: number, locale: string, currency = "BRL") {
+  return new Intl.NumberFormat(locale, { style: "currency", currency }).format(value);
 }
 
-function renderCellValue(value: unknown, type: string): React.ReactNode {
+function renderCellValue(value: unknown, type: string, locale: string): React.ReactNode {
   if (value == null) return "—";
   switch (type) {
     case "money":
       return typeof value === "number"
-        ? formatMoney(value)
+        ? formatMoney(value, locale)
         : typeof value === "object" && value !== null && "value" in value
-        ? formatMoney((value as { value: number; currency?: string }).value, (value as { currency?: string }).currency)
+        ? formatMoney((value as { value: number; currency?: string }).value, locale, (value as { currency?: string }).currency)
         : String(value);
     case "image":
       return typeof value === "string" ? (
@@ -38,7 +39,7 @@ function renderCellValue(value: unknown, type: string): React.ReactNode {
   }
 }
 
-function compareValues(a: unknown, b: unknown, type: string): number {
+function compareValues(a: unknown, b: unknown, type: string, locale: string): number {
   if (a == null && b == null) return 0;
   if (a == null) return 1;
   if (b == null) return -1;
@@ -51,10 +52,11 @@ function compareValues(a: unknown, b: unknown, type: string): number {
   if (type === "number") {
     return (Number(a) || 0) - (Number(b) || 0);
   }
-  return String(a).localeCompare(String(b), "pt-BR");
+  return String(a).localeCompare(String(b), locale);
 }
 
 export function DataTableRenderer({ title, columns, rows, sortable }: DisplayTable) {
+  const { locale } = useTranslation();
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
@@ -72,7 +74,7 @@ export function DataTableRenderer({ title, columns, rows, sortable }: DisplayTab
     ? [...rows].sort((a, b) => {
         const col = columns.find((c) => c.key === sortKey);
         const dir = sortDir === "asc" ? 1 : -1;
-        return compareValues(a[sortKey], b[sortKey], col?.type ?? "text") * dir;
+        return compareValues(a[sortKey], b[sortKey], col?.type ?? "text", locale) * dir;
       })
     : rows;
 
@@ -130,7 +132,7 @@ export function DataTableRenderer({ title, columns, rows, sortable }: DisplayTab
                     key={col.key}
                     className={col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"}
                   >
-                    {renderCellValue(row[col.key], col.type)}
+                    {renderCellValue(row[col.key], col.type, locale)}
                   </TableCell>
                 ))}
               </TableRow>

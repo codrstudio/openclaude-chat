@@ -13,12 +13,10 @@ import {
 import { cn } from "../lib/utils.js";
 import { useTranslation } from "../i18n/index.js";
 
-function formatMoney(value: number, currency = "BRL") {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(value);
-}
-
 export function ComparisonTableRenderer({ title, items, attributes }: DisplayComparison) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const formatMoney = (value: number, currency = "BRL") =>
+    new Intl.NumberFormat(locale, { style: "currency", currency }).format(value);
   const [bestIdx, setBestIdx] = useState<number | null>(null);
 
   // Auto-detect best value by lowest price if no manual selection
@@ -39,7 +37,7 @@ export function ComparisonTableRenderer({ title, items, attributes }: DisplayCom
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="font-semibold text-center">Atributo</TableHead>
+              <TableHead className="font-semibold text-center">{t("comparison.attribute")}</TableHead>
               {items.map((item, i) => (
                 <TableHead
                   key={i}
@@ -93,7 +91,7 @@ export function ComparisonTableRenderer({ title, items, attributes }: DisplayCom
               <>
                 {items.some((i) => i.rating) && (
                   <TableRow>
-                    <TableCell className="font-medium">Avaliação</TableCell>
+                    <TableCell className="font-medium">{t("comparison.rating")}</TableCell>
                     {items.map((item, ci) => (
                       <TableCell
                         key={ci}
@@ -109,7 +107,7 @@ export function ComparisonTableRenderer({ title, items, attributes }: DisplayCom
                 )}
                 {items.some((i) => i.description) && (
                   <TableRow>
-                    <TableCell className="font-medium">Descrição</TableCell>
+                    <TableCell className="font-medium">{t("comparison.description")}</TableCell>
                     {items.map((item, ci) => (
                       <TableCell
                         key={ci}

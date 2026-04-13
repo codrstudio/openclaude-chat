@@ -2,22 +2,21 @@ import type { DisplayPrice } from "./sdk-types.js";
 import { ExternalLink } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Card } from "../ui/card";
-
-function formatPrice(value: number, currency?: string): string {
-  // Fallbacks defensivos: se o modelo nao enviar currency ou enviar um valor
-  // invalido (ex: string vazia), caimos num formato numerico simples em vez de
-  // crashar a arvore React com "Currency code is required".
-  try {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: currency || "BRL",
-    }).format(value);
-  } catch {
-    return new Intl.NumberFormat("pt-BR").format(value);
-  }
-}
+import { useTranslation } from "../i18n/index.js";
 
 export function PriceHighlightRenderer({ value, label, context, source, badge }: DisplayPrice) {
+  const { locale } = useTranslation();
+
+  function formatPrice(v: number, currency?: string): string {
+    try {
+      return new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency: currency || "BRL",
+      }).format(v);
+    } catch {
+      return new Intl.NumberFormat(locale).format(v);
+    }
+  }
   // Tambem aceita value como numero flat (modelo pode nao seguir schema exato).
   const amount =
     typeof value === "number"

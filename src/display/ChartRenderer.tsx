@@ -42,7 +42,7 @@ const TOOLTIP_STYLE = {
 
 function formatValue(value: number, format?: DisplayChart["format"]): string {
   if (!format) return String(value);
-  const locale = format.locale ?? "pt-BR";
+  const locale = format.locale ?? "en-US";
   const prefix = format.prefix ?? "";
   const suffix = format.suffix ?? "";
   if (prefix.includes("R$") || prefix.includes("$") || prefix.includes("€")) {
