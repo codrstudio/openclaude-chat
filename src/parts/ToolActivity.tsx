@@ -55,6 +55,7 @@ export function ToolActivity({ toolName, state, args, className, iconMap }: Tool
   const isActive = state === "call" || state === "partial-call";
   const displayName = formatToolName(toolName);
   const argsPreview = formatArgs(toolName, args);
+  const elapsedMs = args?._elapsedMs as number | undefined;
 
   return (
     <div className={cn(
@@ -67,6 +68,11 @@ export function ToolActivity({ toolName, state, args, className, iconMap }: Tool
       <span className="font-medium font-mono text-foreground">{displayName}</span>
       {argsPreview && (
         <span className="truncate text-xs text-muted-foreground font-mono max-w-[300px]">{argsPreview}</span>
+      )}
+      {isActive && elapsedMs != null && elapsedMs > 0 && (
+        <span className="text-[10px] text-muted-foreground tabular-nums">
+          {(elapsedMs / 1000).toFixed(1)}s
+        </span>
       )}
       <span className="ml-auto text-muted-foreground">
         {isActive ? (

@@ -5,6 +5,7 @@ import { LazyRender } from "../components/LazyRender.js";
 import { ReasoningBlock } from "./ReasoningBlock.js";
 import { ToolActivity } from "./ToolActivity.js";
 import { ToolResult } from "./ToolResult.js";
+import { TaskCard, type TaskCardProps } from "./TaskCard.js";
 import { resolveDisplayRenderer } from "../display/registry.js";
 import type { DisplayRendererMap } from "../display/registry.js";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "../ui/collapsible.js";
@@ -148,6 +149,11 @@ export const PartRenderer = memo(function PartRenderer({ part, isStreaming, disp
           args={toolInvocation.args}
         />
       );
+    }
+
+    case "task-card": {
+      const p = part as unknown as TaskCardProps;
+      return <TaskCard {...p} />;
     }
 
     default:
