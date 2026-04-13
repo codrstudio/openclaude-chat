@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { MessageSquare } from "lucide-react";
 import { cn } from "../lib/utils.js";
 import { ChatProvider, useChatContext } from "../hooks/ChatProvider.js";
@@ -129,6 +129,11 @@ export function Chat({
   const [selectedModel, setSelectedModel] = useState<string | undefined>(undefined);
   const resolvedLocale = useMemo(() => resolveLocale(localeProp), [localeProp]);
   const [currentLocale, setCurrentLocale] = useState(resolvedLocale);
+
+  // Sync internal state when parent changes locale prop (e.g. via ChatHeader)
+  useEffect(() => {
+    setCurrentLocale(resolvedLocale);
+  }, [resolvedLocale]);
 
   const handleLocaleChange = (l: string) => {
     setCurrentLocale(l);

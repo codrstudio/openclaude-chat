@@ -107,5 +107,9 @@ export type { LocaleProviderProps, LocaleSlug, BuiltInLocale, LocaleInfo, Transl
 export { LocaleSelect } from "./components/LocaleSelect.js";
 export type { LocaleSelectProps } from "./components/LocaleSelect.js";
 
+// ChatHeader
+export { ChatHeader } from "./components/ChatHeader.js";
+export type { ChatHeaderProps } from "./components/ChatHeader.js";
+
 // useIsMobile helper reuse
 export { useIsMobile } from "./hooks/useIsMobile.js";
