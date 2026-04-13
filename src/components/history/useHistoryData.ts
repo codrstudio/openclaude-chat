@@ -67,8 +67,13 @@ function readStorage(): Conversation[] {
   }
 }
 
+/** Event name dispatched on window whenever localStorage history changes. */
+const HISTORY_CHANGE_EVENT = "openclaude-history-change"
+
 function writeStorage(items: Conversation[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+  // Notify same-tab listeners (StorageEvent only fires cross-tab)
+  window.dispatchEvent(new CustomEvent(HISTORY_CHANGE_EVENT))
 }
 
 function readMessages(conversationId: string): Message[] {
@@ -207,6 +212,13 @@ export function useHistoryData(transport: ChatTransport): UseHistoryDataReturn {
 
   useEffect(() => {
     void refresh()
+  }, [refresh])
+
+  // Auto-refresh when localStorage history changes (e.g. from ChatHeader actions)
+  useEffect(() => {
+    const handler = () => void refresh()
+    window.addEventListener(HISTORY_CHANGE_EVENT, handler)
+    return () => window.removeEventListener(HISTORY_CHANGE_EVENT, handler)
   }, [refresh])
 
   const groups = groupConversations(conversations, t)
