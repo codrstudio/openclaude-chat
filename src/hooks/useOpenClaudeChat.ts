@@ -1,57 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Message, MessagePart, ToolInvocationPart } from "../types.js";
-
-// Minimo necessario dos tipos de @codrstudio/openclaude-sdk — evita dep dura.
-interface TextBlock {
-  type: "text";
-  text: string;
-}
-interface ToolUseBlock {
-  type: "tool_use";
-  id: string;
-  name: string;
-  input: Record<string, unknown>;
-}
-interface ToolResultBlock {
-  type: "tool_result";
-  tool_use_id: string;
-  content: unknown;
-  is_error?: boolean;
-}
-type ContentBlock = TextBlock | ToolUseBlock | ToolResultBlock;
-
-interface SDKAssistantMessage {
-  type: "assistant";
-  uuid: string;
-  session_id: string;
-  message: { id: string; content: ContentBlock[] };
-  parent_tool_use_id: string | null;
-}
-interface SDKUserMessage {
-  type: "user";
-  session_id: string;
-  message: { content: ContentBlock[] | unknown };
-  parent_tool_use_id: string | null;
-}
-interface SDKResultMessage {
-  type: "result";
-  subtype?: string;
-  session_id: string;
-  total_cost_usd?: number;
-  duration_ms?: number;
-  is_error?: boolean;
-}
-interface SDKSystemMessage {
-  type: "system";
-  subtype?: string;
-  session_id: string;
-}
-type SDKMessage =
-  | SDKAssistantMessage
-  | SDKUserMessage
-  | SDKResultMessage
-  | SDKSystemMessage
-  | { type: string; [k: string]: unknown };
+import type { Message, MessagePart, ToolInvocationPart, TurnMetadata } from "../types.js";
+import { extractTextFromParts } from "../lib/sdk-to-message.js";
+import type {
+  ContentBlock,
+  SDKAssistantMessage,
+  SDKUserMessage,
+  SDKResultMessage,
+  SDKMessage,
+} from "../lib/sdk-to-message.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -95,15 +51,6 @@ export interface UseOpenClaudeChatReturn {
   stop: () => void;
   reload: () => Promise<void>;
   clear: () => void;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-function extractTextFromParts(parts: MessagePart[]): string {
-  return parts
-    .filter((p): p is { type: "text"; text: string } => p.type === "text")
-    .map((p) => p.text)
-    .join("\n");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -215,6 +162,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
       // leva a blocos perdidos).
       const accumulatedParts: MessagePart[] = [];
       const toolPartByCallId = new Map<string, ToolInvocationPart>();
+      const streamMeta: Partial<TurnMetadata> = {};
 
       const commit = () => {
         const snapshot = accumulatedParts.map((p) => ({ ...p }));
@@ -273,10 +221,26 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
           }
 
           const assistant = msg as SDKAssistantMessage;
+
+          // Capture error from SDK message
+          if (assistant.error) {
+            accumulatedParts.push({
+              type: "text",
+              text: `⚠️ **${assistant.error.type}**: ${assistant.error.message}`,
+            });
+          }
+
+          // Capture model info
+          if (assistant.message?.model) {
+            streamMeta.model = assistant.message.model;
+          }
+
           const blocks = assistant.message?.content ?? [];
           for (const block of blocks) {
             if (block.type === "text") {
               accumulatedParts.push({ type: "text", text: block.text });
+            } else if (block.type === "thinking") {
+              accumulatedParts.push({ type: "reasoning", reasoning: (block as { thinking: string }).thinking });
             } else if (block.type === "tool_use") {
               if (toolPartByCallId.has(block.id)) continue;
               const part: ToolInvocationPart = {
@@ -321,8 +285,219 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
           return;
         }
 
+        // Tool progress — update elapsed time on running tool
+        if (msg.type === "tool_progress") {
+          const tp = msg as { tool_use_id?: string; elapsed_ms?: number };
+          if (tp.tool_use_id) {
+            const part = toolPartByCallId.get(tp.tool_use_id);
+            if (part && (part.toolInvocation.state === "call" || part.toolInvocation.state === "partial-call")) {
+              part.toolInvocation = {
+                ...part.toolInvocation,
+                args: { ...part.toolInvocation.args, _elapsedMs: tp.elapsed_ms },
+              };
+              commit();
+            }
+          }
+          return;
+        }
+
+        // Streaming granular — deltas character-by-character
+        if (msg.type === "stream_event") {
+          const event = (msg as { event?: { type?: string; index?: number; delta?: Record<string, unknown>; content_block?: Record<string, unknown> } }).event;
+          if (!event) return;
+
+          if (event.type === "content_block_start") {
+            const block = event.content_block;
+            if (!block) return;
+            if (block.type === "text") {
+              accumulatedParts.push({ type: "text", text: (block.text as string) ?? "" });
+              commit();
+            } else if (block.type === "thinking") {
+              accumulatedParts.push({ type: "reasoning", reasoning: (block.thinking as string) ?? "" });
+              commit();
+            } else if (block.type === "tool_use") {
+              const id = block.id as string;
+              const name = block.name as string;
+              if (id && name && !toolPartByCallId.has(id)) {
+                const part: ToolInvocationPart = {
+                  type: "tool-invocation",
+                  toolInvocation: {
+                    toolName: name,
+                    toolCallId: id,
+                    state: "partial-call",
+                    args: {},
+                  },
+                };
+                toolPartByCallId.set(id, part);
+                accumulatedParts.push(part);
+                commit();
+              }
+            }
+            return;
+          }
+
+          if (event.type === "content_block_delta") {
+            const delta = event.delta;
+            if (!delta) return;
+            if (delta.type === "text_delta" && typeof delta.text === "string") {
+              // Append to last text part
+              const lastPart = accumulatedParts[accumulatedParts.length - 1];
+              if (lastPart && lastPart.type === "text") {
+                (lastPart as { type: "text"; text: string }).text += delta.text;
+              } else {
+                accumulatedParts.push({ type: "text", text: delta.text });
+              }
+              commit();
+            } else if (delta.type === "thinking_delta" && typeof delta.thinking === "string") {
+              const lastPart = accumulatedParts[accumulatedParts.length - 1];
+              if (lastPart && lastPart.type === "reasoning") {
+                (lastPart as { type: "reasoning"; reasoning: string }).reasoning += delta.thinking;
+              } else {
+                accumulatedParts.push({ type: "reasoning", reasoning: delta.thinking });
+              }
+              commit();
+            } else if (delta.type === "input_json_delta" && typeof delta.partial_json === "string") {
+              // Tool args being generated — accumulate JSON string
+              // The final tool_use input comes with the full SDKAssistantMessage
+              // This is just for live preview (partial-call state)
+            }
+            return;
+          }
+
+          if (event.type === "content_block_stop") {
+            // Block finalized — will be confirmed by next SDKAssistantMessage
+            return;
+          }
+
+          // message_start, message_stop — no-op for now
+          return;
+        }
+
         if (msg.type === "result") {
-          // fim do turno — nada a fazer aqui; o loop quebra no "done"
+          const sdk = msg as SDKResultMessage;
+          const meta: TurnMetadata = {
+            ...streamMeta,
+            costUsd: sdk.total_cost_usd,
+            durationMs: sdk.duration_ms,
+            isError: sdk.is_error,
+          };
+          if (sdk.usage) {
+            meta.inputTokens = sdk.usage.input_tokens;
+            meta.outputTokens = sdk.usage.output_tokens;
+            meta.cachedTokens = sdk.usage.cache_read_input_tokens;
+          }
+          // Attach to the assistant message via setMessages
+          setMessages((prev) => {
+            const idx = prev.findIndex((m) => m.id === assistantId);
+            if (idx === -1) return prev;
+            const next = prev.slice();
+            next[idx] = { ...prev[idx], turnMeta: meta };
+            return next;
+          });
+          return;
+        }
+
+        // Rate limit events
+        if (msg.type === "rate_limit_event") {
+          const rle = msg as { status?: string; utilization?: number; reset_at?: string };
+          if (rle.status === "rejected") {
+            accumulatedParts.push({
+              type: "text",
+              text: `⚠️ **Rate limit exceeded** — resets at ${rle.reset_at ?? "unknown"}`,
+            });
+            commit();
+          }
+          // allowed_warning — could show badge, but not critical for now
+          return;
+        }
+
+        // Prompt suggestions
+        if (msg.type === "prompt_suggestion") {
+          const ps = msg as { suggestion?: string };
+          if (ps.suggestion) {
+            accumulatedParts.push({
+              type: "prompt-suggestion",
+              suggestion: ps.suggestion,
+            } as MessagePart);
+            commit();
+          }
+          return;
+        }
+
+        // Tool use summary
+        if (msg.type === "tool_use_summary") {
+          const tus = msg as { summary?: string };
+          if (tus.summary) {
+            accumulatedParts.push({
+              type: "text",
+              text: `> **Tool summary:** ${tus.summary}`,
+            });
+            commit();
+          }
+          return;
+        }
+
+        // System messages — task events, status, etc.
+        if (msg.type === "system") {
+          const sys = msg as { subtype?: string; description?: string; summary?: string; tool_uses?: number; total_tokens?: number; output_file?: string; status?: string };
+
+          if (sys.subtype === "task_started" && sys.description) {
+            accumulatedParts.push({
+              type: "task-card",
+              description: sys.description,
+              status: "in_progress",
+            } as MessagePart);
+            commit();
+          } else if (sys.subtype === "task_progress") {
+            for (let i = accumulatedParts.length - 1; i >= 0; i--) {
+              const p = accumulatedParts[i] as { type: string; toolUses?: number; totalTokens?: number };
+              if (p.type === "task-card") {
+                if (sys.tool_uses != null) p.toolUses = sys.tool_uses;
+                if (sys.total_tokens != null) p.totalTokens = sys.total_tokens;
+                commit();
+                break;
+              }
+            }
+          } else if (sys.subtype === "status") {
+            // Status messages (e.g., "compacting") — inline toast
+            const status = (sys as { status?: string }).status;
+            if (status) {
+              accumulatedParts.push({
+                type: "status-toast",
+                status,
+              } as MessagePart);
+              commit();
+            }
+          } else if (sys.subtype === "compact_boundary") {
+            // Compaction boundary — divider
+            const savedTokens = (sys as { pre_tokens?: number }).pre_tokens;
+            accumulatedParts.push({
+              type: "compact-boundary",
+              savedTokens,
+            } as MessagePart);
+            commit();
+          } else if (sys.subtype === "local_command_output") {
+            // Local command output
+            const output = (sys as { output?: string }).output;
+            if (output) {
+              accumulatedParts.push({
+                type: "text",
+                text: output,
+              });
+              commit();
+            }
+          } else if (sys.subtype === "task_notification") {
+            for (let i = accumulatedParts.length - 1; i >= 0; i--) {
+              const p = accumulatedParts[i] as { type: string; status?: string; summary?: string; outputFile?: string };
+              if (p.type === "task-card") {
+                p.status = sys.status === "completed" ? "completed" : sys.status === "failed" ? "failed" : "stopped";
+                if (sys.summary) p.summary = sys.summary;
+                if (sys.output_file) p.outputFile = sys.output_file;
+                commit();
+                break;
+              }
+            }
+          }
           return;
         }
       };
