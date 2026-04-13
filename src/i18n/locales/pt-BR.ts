@@ -108,4 +108,23 @@ export const ptBR: TranslationKeys = {
   // ProductCardRenderer
   "product.rating": "de 5 estrelas",
   "product.reviews": "avaliações",
+  "product.viewProduct": "Ver produto",
+
+  // ComparisonTableRenderer (extra)
+  "comparison.attribute": "Atributo",
+  "comparison.rating": "Avaliação",
+  "comparison.description": "Descrição",
+
+  // TurnFooter (MessageBubble)
+  "bubble.tokenIn": "entrada",
+  "bubble.tokenOut": "saída",
+  "bubble.tokenCached": "cache",
+
+  // History (search results group)
+  "history.results": "Resultados",
+  "history.newConversation": "Nova conversa",
+
+  // NoSessionState
+  "chat.selectConversation": "Selecione uma conversa",
+  "chat.orCreateNew": "ou crie uma nova pelo painel lateral",
 } as const;

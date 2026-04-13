@@ -106,4 +106,23 @@ export const enUS = {
   // ProductCardRenderer
   "product.rating": "of 5 stars",
   "product.reviews": "reviews",
+  "product.viewProduct": "View product",
+
+  // ComparisonTableRenderer (extra)
+  "comparison.attribute": "Attribute",
+  "comparison.rating": "Rating",
+  "comparison.description": "Description",
+
+  // TurnFooter (MessageBubble)
+  "bubble.tokenIn": "in",
+  "bubble.tokenOut": "out",
+  "bubble.tokenCached": "cached",
+
+  // History (search results group)
+  "history.results": "Results",
+  "history.newConversation": "New conversation",
+
+  // NoSessionState
+  "chat.selectConversation": "Select a conversation",
+  "chat.orCreateNew": "or create a new one from the sidebar",
 } as const;

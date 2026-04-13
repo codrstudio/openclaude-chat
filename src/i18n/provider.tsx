@@ -2,44 +2,57 @@ import React, { createContext, useContext, useMemo } from "react";
 import { enUS } from "./locales/en-US.js";
 import { ptBR } from "./locales/pt-BR.js";
 import { esES } from "./locales/es-ES.js";
-import type { LocaleSlug, LocaleInfo, TranslationKeys } from "./types.js";
+import type { LocaleInfo, TranslationKeys, CustomMessages, CustomLocaleInfo } from "./types.js";
 
-// ── Locale registry ──
+// ── Built-in registry ──
 
-const localeMap: Record<LocaleSlug, TranslationKeys> = {
+const builtInLocaleMap: Record<string, TranslationKeys> = {
   "en-US": enUS,
   "pt-BR": ptBR,
   "es-ES": esES,
 };
 
-/** All supported locales with metadata. */
-export const supportedLocales: LocaleInfo[] = [
+/** The 3 locales that ship with the library. */
+export const builtInLocales: LocaleInfo[] = [
   { slug: "en-US", name: "English", flag: "🇺🇸" },
   { slug: "pt-BR", name: "Português Brasileiro", flag: "🇧🇷" },
   { slug: "es-ES", name: "Español", flag: "🇪🇸" },
 ];
 
-/** Default locale. */
-export const defaultLocale: LocaleSlug = "en-US";
+/** @deprecated Use `builtInLocales` — this alias exists for backward compat. */
+export const supportedLocales = builtInLocales;
 
-// ── Normalizer ──
+/** Default locale when none is provided. */
+export const defaultLocale = "en-US";
+
+// ── Locale resolver ──
 
 /**
  * Normalizes locale strings like "pt_br", "pt-br", "PT-BR", "pt" to "xx-YY".
- * Falls back to defaultLocale if unrecognized.
+ * Accepts custom locales — if the input has a valid format (xx-YY), returns it as-is
+ * even if it's not a built-in locale.
  */
-export function resolveLocale(input: string | undefined): LocaleSlug {
+export function resolveLocale(input: string | undefined): string {
   if (!input) return defaultLocale;
-  // Normalize separator to hyphen and lowercase
-  const normalized = input.replace(/_/g, "-").toLowerCase();
-  // Try exact match (xx-yy → xx-YY)
-  for (const locale of supportedLocales) {
+  // Normalize separator to hyphen
+  const raw = input.replace(/_/g, "-");
+  const normalized = raw.toLowerCase();
+  // Try exact match against built-in locales
+  for (const locale of builtInLocales) {
     if (locale.slug.toLowerCase() === normalized) return locale.slug;
   }
-  // Try language-only match (e.g. "pt" → "pt-BR")
+  // Try language-only match against built-in (e.g. "pt" → "pt-BR")
   const lang = normalized.split("-")[0];
-  for (const locale of supportedLocales) {
+  for (const locale of builtInLocales) {
     if (locale.slug.toLowerCase().startsWith(lang + "-")) return locale.slug;
+  }
+  // For custom locales: if it looks like a valid locale slug, normalize casing and pass through
+  const parts = raw.split("-");
+  if (parts.length === 2 && parts[0].length >= 2 && parts[1].length >= 2) {
+    return parts[0].toLowerCase() + "-" + parts[1].toUpperCase();
+  }
+  if (parts.length === 1 && parts[0].length >= 2) {
+    return parts[0].toLowerCase();
   }
   return defaultLocale;
 }
@@ -47,7 +60,7 @@ export function resolveLocale(input: string | undefined): LocaleSlug {
 // ── Context ──
 
 interface LocaleContextValue {
-  locale: LocaleSlug;
+  locale: string;
   t: (key: keyof TranslationKeys) => string;
   supportedLocales: LocaleInfo[];
 }
@@ -55,19 +68,48 @@ interface LocaleContextValue {
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
 export interface LocaleProviderProps {
-  locale?: LocaleSlug;
+  locale?: string;
+  /** Consumer-provided translations keyed by locale slug. */
+  messages?: CustomMessages;
+  /** Consumer-provided metadata for custom locales (shown in locale selector). */
+  locales?: CustomLocaleInfo;
   children: React.ReactNode;
 }
 
-export function LocaleProvider({ locale = defaultLocale, children }: LocaleProviderProps) {
+export function LocaleProvider({
+  locale = defaultLocale,
+  messages,
+  locales: customLocaleInfo,
+  children,
+}: LocaleProviderProps) {
   const value = useMemo<LocaleContextValue>(() => {
-    const translations = localeMap[locale] ?? enUS;
-    return {
-      locale,
-      t: (key) => translations[key] ?? enUS[key] ?? key,
-      supportedLocales,
+    const builtIn = builtInLocaleMap[locale] as TranslationKeys | undefined;
+    const custom = messages?.[locale] as Record<string, string> | undefined;
+
+    // t() fallback: custom → builtIn → en-US → key
+    const t = (key: keyof TranslationKeys): string => {
+      return (
+        custom?.[key as string]
+        ?? builtIn?.[key]
+        ?? enUS[key as keyof typeof enUS]
+        ?? (key as string)
+      );
     };
-  }, [locale]);
+
+    // Build dynamic supportedLocales: built-in + custom locales with metadata
+    const allLocales = [...builtInLocales];
+    if (messages && customLocaleInfo) {
+      for (const slug of Object.keys(messages)) {
+        const isBuiltIn = builtInLocaleMap[slug] != null;
+        const meta = customLocaleInfo[slug];
+        if (!isBuiltIn && meta) {
+          allLocales.push({ slug, name: meta.name, flag: meta.flag });
+        }
+      }
+    }
+
+    return { locale, t, supportedLocales: allLocales };
+  }, [locale, messages, customLocaleInfo]);
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }
@@ -78,8 +120,8 @@ export function useTranslation(): LocaleContextValue {
     // Fallback: if no provider, return en-US so components still work
     return {
       locale: defaultLocale,
-      t: (key) => enUS[key] ?? key,
-      supportedLocales,
+      t: (key) => enUS[key as keyof typeof enUS] ?? (key as string),
+      supportedLocales: builtInLocales,
     };
   }
   return ctx;

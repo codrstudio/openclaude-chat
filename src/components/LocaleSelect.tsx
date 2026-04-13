@@ -9,11 +9,10 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu.js";
 import { useTranslation } from "../i18n/index.js";
-import type { LocaleSlug } from "../i18n/index.js";
 
 export interface LocaleSelectProps {
-  value: LocaleSlug;
-  onChange: (locale: LocaleSlug) => void;
+  value: string;
+  onChange: (locale: string) => void;
   className?: string;
 }
 
