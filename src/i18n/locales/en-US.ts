@@ -125,4 +125,12 @@ export const enUS = {
   // NoSessionState
   "chat.selectConversation": "Select a conversation",
   "chat.orCreateNew": "or create a new one from the sidebar",
+
+  // DefaultWelcome (empty chat)
+  "chat.welcomeTitle": "How can I help?",
+  "chat.welcomeDescription": "Send a message to start the conversation. You can ask questions, trigger tools, or paste content for analysis.",
+
+  // MessageList
+  "chat.loadingOlder": "Loading older messages...",
+  "chat.conversationStart": "Start of conversation",
 } as const;

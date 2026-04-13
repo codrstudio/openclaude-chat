@@ -27,16 +27,36 @@ export interface MessageListProps {
   isLoadingMore?: boolean;
 }
 
+function LoadingOlder() {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground">
+      <Loader2 className="size-3.5 animate-spin" />
+      <span>{t("chat.loadingOlder")}</span>
+    </div>
+  );
+}
+
+function ConversationStart() {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center justify-center py-3 text-xs text-muted-foreground">
+      <span>{t("chat.conversationStart")}</span>
+    </div>
+  );
+}
+
 function DefaultWelcome() {
+  const { t } = useTranslation();
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 px-6 py-16 text-center">
       <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
         <Sparkles className="size-7" />
       </div>
       <div className="space-y-1.5">
-        <h2 className="text-xl font-semibold tracking-tight">Como posso ajudar?</h2>
+        <h2 className="text-xl font-semibold tracking-tight">{t("chat.welcomeTitle")}</h2>
         <p className="max-w-sm text-sm text-muted-foreground">
-          Envie uma mensagem para comecar a conversa. Voce pode pedir respostas, acionar ferramentas ou colar conteudo para analise.
+          {t("chat.welcomeDescription")}
         </p>
       </div>
     </div>
@@ -123,15 +143,10 @@ export function MessageList({ messages, isLoading, displayRenderers, className, 
       <ScrollAreaPrimitive.Viewport ref={viewportRef} className="h-full w-full rounded-[inherit]">
         {/* Load more indicator / conversation start */}
         {isLoadingMore && (
-          <div className="flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground">
-            <Loader2 className="size-3.5 animate-spin" />
-            <span>Carregando mensagens anteriores...</span>
-          </div>
+          <LoadingOlder />
         )}
         {!isLoadingMore && hasMore === false && messages.length > 0 && (
-          <div className="flex items-center justify-center py-3 text-xs text-muted-foreground">
-            <span>Inicio da conversa</span>
-          </div>
+          <ConversationStart />
         )}
 
         <div

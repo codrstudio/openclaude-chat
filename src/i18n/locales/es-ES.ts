@@ -127,4 +127,12 @@ export const esES: TranslationKeys = {
   // NoSessionState
   "chat.selectConversation": "Selecciona una conversación",
   "chat.orCreateNew": "o crea una nueva desde la barra lateral",
+
+  // DefaultWelcome (empty chat)
+  "chat.welcomeTitle": "¿Cómo puedo ayudar?",
+  "chat.welcomeDescription": "Envía un mensaje para iniciar la conversación. Puedes hacer preguntas, activar herramientas o pegar contenido para análisis.",
+
+  // MessageList
+  "chat.loadingOlder": "Cargando mensajes anteriores...",
+  "chat.conversationStart": "Inicio de la conversación",
 } as const;

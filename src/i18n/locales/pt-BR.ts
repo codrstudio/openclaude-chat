@@ -127,4 +127,12 @@ export const ptBR: TranslationKeys = {
   // NoSessionState
   "chat.selectConversation": "Selecione uma conversa",
   "chat.orCreateNew": "ou crie uma nova pelo painel lateral",
+
+  // DefaultWelcome (empty chat)
+  "chat.welcomeTitle": "Como posso ajudar?",
+  "chat.welcomeDescription": "Envie uma mensagem para começar a conversa. Você pode pedir respostas, acionar ferramentas ou colar conteúdo para análise.",
+
+  // MessageList
+  "chat.loadingOlder": "Carregando mensagens anteriores...",
+  "chat.conversationStart": "Início da conversa",
 } as const;
