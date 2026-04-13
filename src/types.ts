@@ -33,9 +33,27 @@ export type MessagePart =
 
 export type MessageRole = "user" | "assistant";
 
+/** Metadata de custo/usage de um turno, extraida do SDKResultMessage. */
+export interface TurnMetadata {
+  costUsd?: number;
+  durationMs?: number;
+  numTurns?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  cachedTokens?: number;
+  model?: string;
+  stopReason?: string;
+  isError?: boolean;
+  errors?: Array<{ message: string }>;
+}
+
 export interface Message {
   id: string;
   role: MessageRole;
   content: string;
   parts: MessagePart[];
+  /** Metadata do turno — presente na ultima mensagem assistant do turno. */
+  turnMeta?: TurnMetadata;
+  /** Flag de mensagem sintetica (replay de sessao resumida). */
+  isSynthetic?: boolean;
 }
