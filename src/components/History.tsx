@@ -10,7 +10,8 @@ import { HistoryGroup } from "./history/HistoryGroup.js"
 import { HistoryDeleteDialog } from "./history/HistoryDeleteDialog.js"
 import { useHistoryData, createLocalStorageTransport } from "./history/useHistoryData.js"
 import { createDefaultTransport, type ChatTransport } from "../transport.js"
-import { useTranslation } from "../i18n/index.js"
+import { LocaleProvider, useTranslation, resolveLocale } from "../i18n/index.js"
+import type { CustomMessages, CustomLocaleInfo } from "../i18n/index.js"
 
 export interface HistoryProps {
   /** Base URL for the default transport. Ignored if `transport` is provided. */
@@ -27,10 +28,26 @@ export interface HistoryProps {
   onNewConversation?: (id: string) => void
   /** Called after a conversation is deleted. */
   onDeleteConversation?: (id: string) => void
+  /** Locale for UI strings (accepts "pt-BR", "pt_br", "pt", etc). */
+  locale?: string
+  /** Translation overrides keyed by locale slug. */
+  messages?: CustomMessages
+  /** Metadata for custom locales. */
+  locales?: CustomLocaleInfo
   className?: string
 }
 
-export function History({
+/** Wrapper that provides LocaleProvider, then renders the content. */
+export function History({ locale: localeProp, messages, locales, ...rest }: HistoryProps) {
+  const resolvedLocale = resolveLocale(localeProp)
+  return (
+    <LocaleProvider locale={resolvedLocale} messages={messages} locales={locales}>
+      <HistoryContent {...rest} />
+    </LocaleProvider>
+  )
+}
+
+function HistoryContent({
   endpoint,
   token,
   transport: customTransport,
@@ -39,7 +56,9 @@ export function History({
   onNewConversation,
   onDeleteConversation,
   className,
-}: HistoryProps) {
+}: Omit<HistoryProps, "locale">) {
+  const { t } = useTranslation()
+
   // Resolve transport: custom > default (endpoint) > localStorage mock
   const transport = useMemo(() => {
     if (customTransport) {
@@ -101,8 +120,6 @@ export function History({
   }, [deleteTarget, deleteConversation, onDeleteConversation])
 
   const handleDeleteCancel = useCallback(() => setDeleteTarget(null), [])
-
-  const { t } = useTranslation()
 
   return (
     <TooltipProvider delayDuration={300}>

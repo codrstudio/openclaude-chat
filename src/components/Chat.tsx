@@ -7,8 +7,8 @@ import { MessageInput } from "./MessageInput.js";
 import { ModelSelect } from "./ModelSelect.js";
 import { LocaleSelect } from "./LocaleSelect.js";
 import { useModels } from "../hooks/useModels.js";
-import { LocaleProvider, resolveLocale, defaultLocale } from "../i18n/index.js";
-import type { LocaleSlug } from "../i18n/index.js";
+import { LocaleProvider, useTranslation, resolveLocale } from "../i18n/index.js";
+import type { CustomMessages, CustomLocaleInfo } from "../i18n/index.js";
 import type { DisplayRendererMap } from "../display/registry.js";
 import type { Message } from "../types.js";
 
@@ -33,7 +33,11 @@ export interface ChatProps {
   /** Locale inicial (aceita "pt-BR", "pt_br", "pt", etc). Default: "en-US". */
   locale?: string;
   /** Callback quando o usuario troca o locale via selector. */
-  onLocaleChange?: (locale: LocaleSlug) => void;
+  onLocaleChange?: (locale: string) => void;
+  /** Translation overrides keyed by locale slug. */
+  messages?: CustomMessages;
+  /** Metadata for custom locales (shown in locale selector). */
+  locales?: CustomLocaleInfo;
   fetcher?: typeof fetch;
   emptyState?: React.ReactNode;
 }
@@ -48,6 +52,7 @@ interface ChatContentProps {
 }
 
 function NoSessionState({ children }: { children?: React.ReactNode }) {
+  const { t } = useTranslation();
   return children ? (
     <>{children}</>
   ) : (
@@ -56,9 +61,9 @@ function NoSessionState({ children }: { children?: React.ReactNode }) {
         <MessageSquare className="size-7" />
       </div>
       <div className="space-y-1.5">
-        <h2 className="text-xl font-semibold tracking-tight">Select a conversation</h2>
+        <h2 className="text-xl font-semibold tracking-tight">{t("chat.selectConversation")}</h2>
         <p className="max-w-sm text-sm text-muted-foreground">
-          or create a new one from the sidebar
+          {t("chat.orCreateNew")}
         </p>
       </div>
     </div>
@@ -112,6 +117,8 @@ export function Chat({
   enableModelSelect,
   locale: localeProp,
   onLocaleChange,
+  messages: messagesProp,
+  locales: localesProp,
   fetcher,
   emptyState,
 }: ChatProps) {
@@ -121,9 +128,9 @@ export function Chat({
   );
   const [selectedModel, setSelectedModel] = useState<string | undefined>(undefined);
   const resolvedLocale = useMemo(() => resolveLocale(localeProp), [localeProp]);
-  const [currentLocale, setCurrentLocale] = useState<LocaleSlug>(resolvedLocale);
+  const [currentLocale, setCurrentLocale] = useState(resolvedLocale);
 
-  const handleLocaleChange = (l: LocaleSlug) => {
+  const handleLocaleChange = (l: string) => {
     setCurrentLocale(l);
     onLocaleChange?.(l);
   };
@@ -155,16 +162,18 @@ export function Chat({
 
   if (!sessionId) {
     return (
-      <div className={cn("flex flex-col h-full bg-background text-foreground", className)}>
-        {header}
-        <NoSessionState>{emptyState}</NoSessionState>
-        {footer}
-      </div>
+      <LocaleProvider locale={currentLocale} messages={messagesProp} locales={localesProp}>
+        <div className={cn("flex flex-col h-full bg-background text-foreground", className)}>
+          {header}
+          <NoSessionState>{emptyState}</NoSessionState>
+          {footer}
+        </div>
+      </LocaleProvider>
     );
   }
 
   return (
-    <LocaleProvider locale={currentLocale}>
+    <LocaleProvider locale={currentLocale} messages={messagesProp} locales={localesProp}>
       <ChatProvider
         key={sessionId}
         endpoint={endpoint}
