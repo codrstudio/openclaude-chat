@@ -1,7 +1,7 @@
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
-import { useRef, useEffect, useMemo, useCallback, type ReactNode } from "react";
+import { useRef, useEffect, useMemo, useCallback, useState, type ReactNode } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Loader2 } from "lucide-react";
 import type { Message } from "../types.js";
 import { MessageBubble } from "./MessageBubble.js";
 import { StreamingIndicator } from "./StreamingIndicator.js";
@@ -9,6 +9,7 @@ import { ErrorNote } from "./ErrorNote.js";
 import type { DisplayRendererMap } from "../display/registry.js";
 import { ScrollBar } from "../ui/scroll-area.js";
 import { cn } from "../lib/utils.js";
+import { useTranslation } from "../i18n/index.js";
 
 export interface MessageListProps {
   messages: Message[];
@@ -18,6 +19,12 @@ export interface MessageListProps {
   error?: Error;
   onRetry?: () => void;
   emptyState?: ReactNode;
+  /** Whether there are older messages to load. */
+  hasMore?: boolean;
+  /** Called when the user scrolls near the top and hasMore is true. */
+  onLoadMore?: () => void;
+  /** Whether older messages are currently being loaded. */
+  isLoadingMore?: boolean;
 }
 
 function DefaultWelcome() {
@@ -36,9 +43,10 @@ function DefaultWelcome() {
   );
 }
 
-export function MessageList({ messages, isLoading, displayRenderers,className, error, onRetry, emptyState }: MessageListProps) {
+export function MessageList({ messages, isLoading, displayRenderers, className, error, onRetry, emptyState, hasMore, onLoadMore, isLoadingMore }: MessageListProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const isFollowingRef = useRef(true);
+  const loadMoreDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const lastAssistantIndex = useMemo(() =>
     messages.reduceRight((found, msg, i) => {
@@ -56,14 +64,23 @@ export function MessageList({ messages, isLoading, displayRenderers,className, e
     paddingStart: 16,
   });
 
-  // Track scroll position to detect if user is following
+  // Track scroll position to detect if user is following + trigger load more
   const handleScroll = useCallback(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
     const distanceFromBottom =
       viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
     isFollowingRef.current = distanceFromBottom <= 100;
-  }, []);
+
+    // Infinite scroll reverse: load more when near top
+    if (hasMore && !isLoadingMore && onLoadMore && viewport.scrollTop < 200) {
+      if (loadMoreDebounceRef.current) clearTimeout(loadMoreDebounceRef.current);
+      loadMoreDebounceRef.current = setTimeout(() => {
+        onLoadMore();
+        loadMoreDebounceRef.current = null;
+      }, 300);
+    }
+  }, [hasMore, isLoadingMore, onLoadMore]);
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -104,6 +121,19 @@ export function MessageList({ messages, isLoading, displayRenderers,className, e
   return (
     <ScrollAreaPrimitive.Root className={cn("flex-1 relative overflow-hidden", className)}>
       <ScrollAreaPrimitive.Viewport ref={viewportRef} className="h-full w-full rounded-[inherit]">
+        {/* Load more indicator / conversation start */}
+        {isLoadingMore && (
+          <div className="flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground">
+            <Loader2 className="size-3.5 animate-spin" />
+            <span>Carregando mensagens anteriores...</span>
+          </div>
+        )}
+        {!isLoadingMore && hasMore === false && messages.length > 0 && (
+          <div className="flex items-center justify-center py-3 text-xs text-muted-foreground">
+            <span>Inicio da conversa</span>
+          </div>
+        )}
+
         <div
           className="relative w-full"
           style={{ height: virtualizer.getTotalSize() + 16 }}
