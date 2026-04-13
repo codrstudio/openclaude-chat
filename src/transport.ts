@@ -10,6 +10,21 @@ export interface ConversationDetail extends Conversation {
   agentId?: string
 }
 
+export interface GetMessagesParams {
+  /** Max messages to return. Default: 50, max: 200. */
+  limit?: number
+  /** Cursor — return messages before this point. Omit for latest messages. */
+  before?: string
+}
+
+export interface GetMessagesResult {
+  messages: Message[]
+  /** true if there are older messages available. */
+  hasMore: boolean
+  /** Cursor for the next page (null if no more). */
+  cursor: string | null
+}
+
 // ── Interface principal ──────────────────────────────────────────────────
 
 export interface ChatTransport {
@@ -25,7 +40,7 @@ export interface ChatTransport {
   exportConversation(id: string, format?: "json" | "markdown"): Promise<Blob>
 
   // --- Mensagens (Chat) ---
-  getMessages(conversationId: string): Promise<Message[]>
+  getMessages(conversationId: string, params?: GetMessagesParams): Promise<GetMessagesResult>
   sendMessage(
     conversationId: string,
     params: { content: string; attachments?: File[] },
@@ -87,8 +102,12 @@ export function createDefaultTransport(endpoint: string, token?: string): ChatTr
       return res.blob()
     },
 
-    async getMessages(id) {
-      const res = await request("GET", `/conversations/${encodeURIComponent(id)}/messages`)
+    async getMessages(id, params) {
+      const qs = new URLSearchParams()
+      if (params?.limit) qs.set("limit", String(params.limit))
+      if (params?.before) qs.set("before", params.before)
+      const qsStr = qs.toString()
+      const res = await request("GET", `/conversations/${encodeURIComponent(id)}/messages${qsStr ? `?${qsStr}` : ""}`)
       return res.json()
     },
 

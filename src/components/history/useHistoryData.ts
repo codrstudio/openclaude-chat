@@ -130,8 +130,34 @@ export function createLocalStorageTransport(): ChatTransport {
       return new Blob(["{}"], { type: "application/json" })
     },
 
-    async getMessages(id) {
-      return readMessages(id)
+    async getMessages(id, params) {
+      const all = readMessages(id)
+      const limit = Math.min(params?.limit ?? 50, 200)
+      const beforeCursor = params?.before
+
+      if (!beforeCursor) {
+        // Return latest messages
+        const start = Math.max(0, all.length - limit)
+        const messages = all.slice(start)
+        return {
+          messages,
+          hasMore: start > 0,
+          cursor: start > 0 ? all[start]?.id ?? null : null,
+        }
+      }
+
+      // Find cursor position and return messages before it
+      const cursorIdx = all.findIndex((m) => m.id === beforeCursor)
+      if (cursorIdx <= 0) {
+        return { messages: [], hasMore: false, cursor: null }
+      }
+      const start = Math.max(0, cursorIdx - limit)
+      const messages = all.slice(start, cursorIdx)
+      return {
+        messages,
+        hasMore: start > 0,
+        cursor: start > 0 ? all[start]?.id ?? null : null,
+      }
     },
 
     sendMessage() {
@@ -192,15 +218,17 @@ export function useHistoryData(transport: ChatTransport): UseHistoryDataReturn {
         const matches = conversations
           .filter((c) => c.title.toLowerCase().includes(q))
           .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-        return matches.length ? [{ label: "Results", conversations: matches }] : []
+        return matches.length ? [{ label: t("history.results"), conversations: matches }] : []
       })()
     : groups
 
   const createConversation = useCallback(async () => {
     const { sessionId } = await transportRef.current.createConversation()
+    // Rename to locale-aware default title
+    await transportRef.current.updateConversation(sessionId, { title: t("history.newConversation") })
     await refresh()
     return sessionId
-  }, [refresh])
+  }, [refresh, t])
 
   const renameConversation = useCallback(
     async (id: string, title: string) => {
