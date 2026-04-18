@@ -21,7 +21,9 @@
     "build": "tsc && postcss src/styles.css -o dist/styles.css",
     "build:ts": "tsc",
     "build:css": "postcss src/styles.css -o dist/styles.css",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "registry:source": "node scripts/build-registry.mjs",
+    "registry:build": "npm run registry:source && shadcn build --output ./registry"
   },
   "peerDependencies": {
     "react": "^18 || ^19",
