@@ -136,7 +136,16 @@ function PlusMenu({ onFile, onCamera, onGallery, onClose }: {
   }, [onClose]);
 
   return (
-    <div ref={menuRef} className="absolute bottom-full left-0 mb-2 rounded-xl border border-border bg-popover text-popover-foreground shadow-lg py-1 min-w-[160px] z-10">
+    <div
+      ref={menuRef}
+      style={{
+        position: "absolute",
+        bottom: "calc(100% + 8px)",
+        left: 0,
+        zIndex: 50,
+      }}
+      className="rounded-xl border border-border bg-popover text-popover-foreground shadow-lg py-1 min-w-[160px]"
+    >
       {[
         { icon: Paperclip, label: t("input.file"), onClick: onFile },
         { icon: Camera, label: t("input.camera"), onClick: onCamera },
