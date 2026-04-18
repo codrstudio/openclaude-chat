@@ -10,6 +10,7 @@ import { HistoryGroup } from "./history/HistoryGroup.js"
 import { HistoryDeleteDialog } from "./history/HistoryDeleteDialog.js"
 import { useHistoryData, createLocalStorageTransport } from "./history/useHistoryData.js"
 import { createDefaultTransport, type ChatTransport } from "../transport.js"
+import { useHistoryContext } from "../hooks/HistoryProvider.js"
 import { LocaleProvider, useTranslation, resolveLocale } from "../i18n/index.js"
 import type { CustomMessages, CustomLocaleInfo } from "../i18n/index.js"
 
@@ -34,6 +35,12 @@ export interface HistoryProps {
   messages?: CustomMessages
   /** Metadata for custom locales. */
   locales?: CustomLocaleInfo
+  /** When defined, History is controlled by the host. Hides the internal search input. */
+  searchQuery?: string
+  /** Called when the internal input changes (uncontrolled) or proxies external changes (controlled). */
+  onSearchChange?: (q: string) => void
+  /** Hide the internal search input even when uncontrolled (host renders its own input elsewhere). */
+  hideSearchInput?: boolean
   className?: string
 }
 
@@ -55,6 +62,9 @@ function HistoryContent({
   onSelectConversation,
   onNewConversation,
   onDeleteConversation,
+  searchQuery: externalSearchQuery,
+  onSearchChange,
+  hideSearchInput,
   className,
 }: Omit<HistoryProps, "locale">) {
   const { t } = useTranslation()
@@ -74,6 +84,18 @@ function HistoryContent({
     return createLocalStorageTransport()
   }, [customTransport, endpoint, token])
 
+  // Try to read agentId and registerRefresh from HistoryProvider context (if available)
+  let ctxAgentId: string | undefined
+  let ctxRegisterRefresh: ((fn: () => Promise<void>) => void) | undefined
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const ctx = useHistoryContext()
+    ctxAgentId = ctx.agentId
+    ctxRegisterRefresh = ctx.registerRefresh
+  } catch {
+    // Not inside HistoryProvider — that's fine, agentId stays undefined
+  }
+
   const {
     filteredGroups,
     searchQuery,
@@ -83,7 +105,15 @@ function HistoryContent({
     renameConversation,
     deleteConversation,
     toggleStar,
-  } = useHistoryData(transport)
+  } = useHistoryData(transport, {
+    agentId: ctxAgentId,
+    registerRefresh: ctxRegisterRefresh,
+    externalSearchQuery,
+    onExternalSearchChange: onSearchChange,
+  })
+
+  const isSearchControlled = externalSearchQuery !== undefined
+  const showInternalSearch = !hideSearchInput && !isSearchControlled
 
   // Delete confirmation state
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null)
@@ -135,11 +165,14 @@ function HistoryContent({
         <Separator />
 
         {/* Search */}
-        <div className="shrink-0 py-2">
-          <HistorySearch value={searchQuery} onChange={setSearchQuery} />
-        </div>
-
-        <Separator />
+        {showInternalSearch && (
+          <>
+            <div className="shrink-0 py-2">
+              <HistorySearch value={searchQuery} onChange={setSearchQuery} />
+            </div>
+            <Separator />
+          </>
+        )}
 
         {/* List */}
         <ScrollArea className="flex-1">

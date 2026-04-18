@@ -191,24 +191,53 @@ export interface UseHistoryDataReturn {
   toggleStar: (id: string) => Promise<void>
 }
 
-export function useHistoryData(transport: ChatTransport): UseHistoryDataReturn {
+export function useHistoryData(
+  transport: ChatTransport,
+  options?: {
+    agentId?: string;
+    registerRefresh?: (fn: () => Promise<void>) => void;
+    /** When defined, search query is controlled externally (e.g. by a host shell). */
+    externalSearchQuery?: string;
+    /** Callback invoked when search changes while controlled externally. */
+    onExternalSearchChange?: (q: string) => void;
+  },
+): UseHistoryDataReturn {
   const { t } = useTranslation()
   const transportRef = useRef(transport)
   transportRef.current = transport
+  const agentIdRef = useRef(options?.agentId)
+  agentIdRef.current = options?.agentId
 
   const [conversations, setConversations] = useState<Conversation[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
+  const [internalSearchQuery, setInternalSearchQuery] = useState("")
   const [isLoading, setIsLoading] = useState(true)
+
+  const isControlled = options?.externalSearchQuery !== undefined
+  const searchQuery = isControlled ? (options!.externalSearchQuery as string) : internalSearchQuery
+  const setSearchQuery = useCallback(
+    (q: string) => {
+      if (isControlled) options?.onExternalSearchChange?.(q)
+      else setInternalSearchQuery(q)
+    },
+    [isControlled, options],
+  )
 
   const refresh = useCallback(async () => {
     setIsLoading(true)
     try {
-      const items = await transportRef.current.listConversations()
+      const items = await transportRef.current.listConversations(
+        agentIdRef.current ? { agentId: agentIdRef.current } : undefined,
+      )
       setConversations(items)
     } finally {
       setIsLoading(false)
     }
   }, [])
+
+  // Register refresh in provider context so external consumers can trigger it (D-10)
+  useEffect(() => {
+    options?.registerRefresh?.(refresh)
+  }, [refresh, options?.registerRefresh])
 
   useEffect(() => {
     void refresh()
@@ -235,7 +264,9 @@ export function useHistoryData(transport: ChatTransport): UseHistoryDataReturn {
     : groups
 
   const createConversation = useCallback(async () => {
-    const { sessionId } = await transportRef.current.createConversation()
+    const { sessionId } = await transportRef.current.createConversation(
+      agentIdRef.current ? { agentId: agentIdRef.current } : undefined,
+    )
     // Rename to locale-aware default title
     await transportRef.current.updateConversation(sessionId, { title: t("history.newConversation") })
     await refresh()
