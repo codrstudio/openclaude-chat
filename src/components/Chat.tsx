@@ -12,11 +12,27 @@ import type { CustomMessages, CustomLocaleInfo } from "../i18n/index.js";
 import type { DisplayRendererMap } from "../display/registry.js";
 import type { Message } from "../types.js";
 
+// Literal classes so Tailwind's source scanner picks them all up at build time.
+const MAX_WIDTH_CLASS = {
+  sm: "max-w-sm",
+  md: "max-w-md",
+  lg: "max-w-lg",
+  xl: "max-w-xl",
+  "2xl": "max-w-2xl",
+  "3xl": "max-w-3xl",
+  "4xl": "max-w-4xl",
+  "5xl": "max-w-5xl",
+  "6xl": "max-w-6xl",
+  "7xl": "max-w-7xl",
+} as const;
+
+export type ChatMaxWidth = keyof typeof MAX_WIDTH_CLASS | false;
+
 export interface ChatProps {
   /** Base URL do servico openclaude (ex: http://localhost:9500/api/v1/ai). */
   endpoint: string;
   token?: string;
-  /** Sessao live existente. Se omitida, o hook cria uma via POST /sessions. */
+  /** Sessao live existente. Se omitida, o hook cria uma via POST /conversations. */
   sessionId?: string;
   initialMessages?: Message[];
   sessionOptions?: Record<string, unknown>;
@@ -30,6 +46,8 @@ export interface ChatProps {
   enableVoice?: boolean;
   /** Mostra combo de selecao de modelo (carregado via GET /models). */
   enableModelSelect?: boolean;
+  /** Mostra seletor de locale no bottomSlot do input. Default: true. */
+  enableLocaleSelect?: boolean;
   /** Locale inicial (aceita "pt-BR", "pt_br", "pt", etc). Default: "en-US". */
   locale?: string;
   /** Callback quando o usuario troca o locale via selector. */
@@ -40,6 +58,13 @@ export interface ChatProps {
   locales?: CustomLocaleInfo;
   fetcher?: typeof fetch;
   emptyState?: React.ReactNode;
+  /**
+   * Max-width do conteudo do chat (mensagens + input). O chat se centraliza
+   * horizontalmente dentro de um wrapper interno com esse limite. Passar
+   * `false` desativa o limite e o chat ocupa 100% da largura disponivel.
+   * Default: "3xl".
+   */
+  maxWidth?: ChatMaxWidth;
 }
 
 interface ChatContentProps {
@@ -115,12 +140,14 @@ export function Chat({
   enableAttachments,
   enableVoice,
   enableModelSelect,
+  enableLocaleSelect = true,
   locale: localeProp,
   onLocaleChange,
   messages: messagesProp,
   locales: localesProp,
   fetcher,
   emptyState,
+  maxWidth = "3xl",
 }: ChatProps) {
   const { models, defaultModel, isLoading: modelsLoading } = useModels(
     enableModelSelect ? endpoint : "",
@@ -151,9 +178,22 @@ export function Chat({
     [sessionOptions],
   );
 
-  const bottomSlot = (
+  const outerClass = cn(
+    "flex flex-col flex-1 min-h-0 h-full bg-background text-foreground",
+    maxWidth !== false && "items-center",
+    className,
+  );
+  const innerClass = cn(
+    "flex flex-col flex-1 min-h-0 w-full",
+    maxWidth !== false && MAX_WIDTH_CLASS[maxWidth],
+  );
+
+  const hasBottomSlotContent = enableLocaleSelect || enableModelSelect;
+  const bottomSlot = hasBottomSlotContent ? (
     <div className="flex items-center gap-1">
-      <LocaleSelect value={currentLocale} onChange={handleLocaleChange} />
+      {enableLocaleSelect && (
+        <LocaleSelect value={currentLocale} onChange={handleLocaleChange} />
+      )}
       {enableModelSelect && (
         <ModelSelect
           models={models}
@@ -163,15 +203,17 @@ export function Chat({
         />
       )}
     </div>
-  );
+  ) : undefined;
 
   if (!sessionId) {
     return (
       <LocaleProvider locale={currentLocale} messages={messagesProp} locales={localesProp}>
-        <div className={cn("flex flex-col h-full bg-background text-foreground", className)}>
-          {header}
-          <NoSessionState>{emptyState}</NoSessionState>
-          {footer}
+        <div className={outerClass}>
+          <div className={innerClass}>
+            {header}
+            <NoSessionState>{emptyState}</NoSessionState>
+            {footer}
+          </div>
         </div>
       </LocaleProvider>
     );
@@ -190,17 +232,19 @@ export function Chat({
         model={effectiveModel}
         fetcher={fetcher}
       >
-        <div className={cn("flex flex-col h-full bg-background text-foreground", className)}>
-          {header}
-          <ChatContent
-            displayRenderers={displayRenderers}
-            placeholder={placeholder}
-            enableAttachments={enableAttachments}
-            enableVoice={enableVoice}
-            emptyState={emptyState}
-            bottomSlot={bottomSlot}
-          />
-          {footer}
+        <div className={outerClass}>
+          <div className={innerClass}>
+            {header}
+            <ChatContent
+              displayRenderers={displayRenderers}
+              placeholder={placeholder}
+              enableAttachments={enableAttachments}
+              enableVoice={enableVoice}
+              emptyState={emptyState}
+              bottomSlot={bottomSlot}
+            />
+            {footer}
+          </div>
         </div>
       </ChatProvider>
     </LocaleProvider>
