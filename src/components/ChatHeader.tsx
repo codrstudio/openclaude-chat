@@ -13,6 +13,8 @@ import {
 } from "../ui/dropdown-menu.js";
 
 export interface ChatHeaderProps {
+  /** Slot rendered at the far left, before star/title. Use for sidebar toggle, etc. */
+  leftContent?: React.ReactNode;
   /** Conversation title. When undefined, session-dependent elements are hidden. */
   title?: string;
   /** Whether the conversation is starred/bookmarked. */
@@ -21,6 +23,12 @@ export interface ChatHeaderProps {
   onToggleStar?: () => void;
   /** Called when user renames the conversation. */
   onRename?: (title: string) => void;
+  /** Show agent avatar+name instead of star+title. */
+  showAgent?: boolean;
+  /** Agent avatar URL. Only used when showAgent=true. */
+  agentAvatar?: string;
+  /** Agent display name. Only used when showAgent=true. */
+  agentName?: string;
   /** Current locale slug. */
   locale?: string;
   /** Called when user changes locale. */
@@ -31,10 +39,14 @@ export interface ChatHeaderProps {
 }
 
 export function ChatHeader({
+  leftContent,
   title,
   starred,
   onToggleStar,
   onRename,
+  showAgent,
+  agentAvatar,
+  agentName,
   locale,
   onLocaleChange,
   enableLocaleSelect = true,
@@ -91,9 +103,23 @@ export function ChatHeader({
           className,
         )}
       >
-        {/* Left: star + title (only when session exists) */}
+        {/* Left: leftContent slot + star/title or agent avatar */}
         <div className="flex min-w-0 items-center gap-1.5">
-          {hasSession && (
+          {leftContent}
+          {hasSession && showAgent ? (
+            <>
+              {agentAvatar && (
+                <img
+                  src={agentAvatar}
+                  alt={agentName ?? "Agent"}
+                  className="h-6 w-6 shrink-0 rounded-full"
+                />
+              )}
+              {agentName && (
+                <span className="truncate text-sm font-medium">{agentName}</span>
+              )}
+            </>
+          ) : hasSession ? (
             <>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -130,6 +156,8 @@ export function ChatHeader({
                 <span className="truncate text-sm font-medium">{title}</span>
               )}
             </>
+          ) : (
+            leftContent && null
           )}
         </div>
 
