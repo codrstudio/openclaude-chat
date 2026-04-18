@@ -17,7 +17,7 @@ export interface UseOpenClaudeChatOptions {
   /** Optional bearer token. */
   token?: string;
   /**
-   * ID de sessao live. Caso omitido, o hook cria uma sessao nova via POST /sessions
+   * ID de sessao live. Caso omitido, o hook cria uma sessao nova via POST /conversations
    * na primeira mensagem e expoe o id via `sessionId`.
    */
   sessionId?: string;
@@ -27,7 +27,7 @@ export interface UseOpenClaudeChatOptions {
   sessionOptions?: Record<string, unknown>;
   /** Options por turno. Passado como `turnOptions` no body do /prompt. */
   turnOptions?: Record<string, unknown>;
-  /** Modelo selecionado. Enviado como `model` no body de /sessions e /prompt. */
+  /** Modelo selecionado. Enviado como `model` no body de /conversations e /conversations/:id/messages. */
   model?: string;
   /** Customiza fetch (ex: para injetar credenciais). */
   fetcher?: typeof fetch;
@@ -85,7 +85,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     if (sessionId) return sessionId;
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (token) headers.Authorization = `Bearer ${token}`;
-    const res = await doFetch(`${endpoint}/sessions`, {
+    const res = await doFetch(`${endpoint}/conversations`, {
       method: "POST",
       headers,
       body: JSON.stringify({ options: sessionOptions ?? {}, ...(model ? { model } : {}) }),
@@ -99,7 +99,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
   }, [sessionId, endpoint, token, sessionOptions, model, doFetch]);
 
   // ──────────────────────────────────────────────────────────────
-  // Stream parser — consome SSE do endpoint /sessions/:id/prompt
+  // Stream parser — consome SSE do endpoint /conversations/:id/messages
   // Contrato: SEMPRE promove um assistantId no setMessages e SEMPRE retorna
   // o numero de partes acumuladas. O chamador decide se isso configura erro
   // (ex: zero partes = resposta vazia, mesmo com HTTP 200).
@@ -135,10 +135,10 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
       armStall();
       let res: Response;
       try {
-        res = await doFetch(`${endpoint}/sessions/${encodeURIComponent(sid)}/prompt`, {
+        res = await doFetch(`${endpoint}/conversations/${encodeURIComponent(sid)}/messages`, {
           method: "POST",
           headers,
-          body: JSON.stringify({ prompt: text, turnOptions, ...(model ? { model } : {}) }),
+          body: JSON.stringify({ message: text, turnOptions, ...(model ? { model } : {}) }),
           signal: ctrl.signal,
         });
       } catch (err) {

@@ -111,10 +111,18 @@ export function createDefaultTransport(endpoint: string, token?: string): ChatTr
       return res.json()
     },
 
-    sendMessage(_id, _params) {
-      // SSE streaming — implementacao real depende de como o Chat consome o stream.
-      // Sera conectada quando o Chat migrar para o transport layer.
-      throw new Error("sendMessage via transport not yet wired — Chat still uses useOpenClaudeChat SSE directly")
+    async *sendMessage(id, params) {
+      const res = await fetch(`${endpoint}/conversations/${encodeURIComponent(id)}/messages`, {
+        method: "POST",
+        headers: { ...baseHeaders, Accept: "text/event-stream" },
+        body: JSON.stringify({ message: params.content }),
+      })
+      if (!res.ok || !res.body) {
+        const errText = await res.text().catch(() => `HTTP ${res.status}`)
+        throw new Error(`POST /conversations/${id}/messages: ${res.status} — ${errText}`)
+      }
+      // Yield the ReadableStream body — the consumer (useOpenClaudeChat) handles SSE parsing
+      yield res.body
     },
 
     getAttachmentUrl(id, file) {
