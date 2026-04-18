@@ -14,7 +14,7 @@ export type {
 
 // Componente principal
 export { Chat } from "./components/Chat.js";
-export type { ChatProps } from "./components/Chat.js";
+export type { ChatProps, ChatMaxWidth } from "./components/Chat.js";
 
 // Hook + Provider
 export { useOpenClaudeChat } from "./hooks/useOpenClaudeChat.js";
@@ -110,6 +110,10 @@ export type { LocaleSelectProps } from "./components/LocaleSelect.js";
 // ChatHeader
 export { ChatHeader } from "./components/ChatHeader.js";
 export type { ChatHeaderProps } from "./components/ChatHeader.js";
+
+// HistoryTrigger (sidebar toggle button)
+export { HistoryTrigger } from "./components/HistoryTrigger.js";
+export type { HistoryTriggerProps } from "./components/HistoryTrigger.js";
 
 // useIsMobile helper reuse
 export { useIsMobile } from "./hooks/useIsMobile.js";
