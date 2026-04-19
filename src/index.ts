@@ -107,9 +107,38 @@ export type { LocaleProviderProps, LocaleSlug, BuiltInLocale, LocaleInfo, Transl
 export { LocaleSelect } from "./components/LocaleSelect.js";
 export type { LocaleSelectProps } from "./components/LocaleSelect.js";
 
-// ChatHeader
+// ChatHeader (compound, back-compat)
 export { ChatHeader } from "./components/ChatHeader.js";
 export type { ChatHeaderProps } from "./components/ChatHeader.js";
+
+// ChatHeader subparts (for consumers that inject into their own breadcrumb/toolbar)
+export { ChatTitle } from "./components/ChatTitle.js";
+export type { ChatTitleProps, ChatTitleHandle } from "./components/ChatTitle.js";
+export { ChatStarButton } from "./components/ChatStarButton.js";
+export type { ChatStarButtonProps } from "./components/ChatStarButton.js";
+export { ChatActionsMenu } from "./components/ChatActionsMenu.js";
+export type { ChatActionsMenuProps } from "./components/ChatActionsMenu.js";
+
+// History subparts (for consumers that assemble History from primitives)
+export { HistoryNewButton } from "./components/history/HistoryNewButton.js";
+export type { HistoryNewButtonProps } from "./components/history/HistoryNewButton.js";
+
+// History containers (envelopes — wrap <History> with a layout moldura)
+export { HistorySidebar } from "./components/HistorySidebar.js";
+export type { HistorySidebarProps } from "./components/HistorySidebar.js";
+export { HistoryDrawer } from "./components/HistoryDrawer.js";
+export type { HistoryDrawerProps } from "./components/HistoryDrawer.js";
+export { HistorySheet } from "./components/HistorySheet.js";
+export type { HistorySheetProps } from "./components/HistorySheet.js";
+export { HistoryResponsive } from "./components/HistoryResponsive.js";
+export type { HistoryResponsiveProps } from "./components/HistoryResponsive.js";
+
+// Chat actions responsive container (symmetric to HistoryResponsive)
+export { ChatActionsResponsive } from "./components/ChatActionsResponsive.js";
+export type { ChatActionsResponsiveProps } from "./components/ChatActionsResponsive.js";
+
+// Generic media query hook (exposed for consumers writing their own responsive logic)
+export { useMediaQuery } from "./hooks/useMediaQuery.js";
 
 // HistoryTrigger (sidebar toggle button)
 export { HistoryTrigger } from "./components/HistoryTrigger.js";
