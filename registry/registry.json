@@ -31,7 +31,8 @@
         "rehype-highlight",
         "remark-gfm",
         "sucrase",
-        "tailwind-merge"
+        "tailwind-merge",
+        "vaul"
       ],
       "files": [
         {
@@ -40,9 +41,29 @@
           "target": "~/src/components/openclaude-chat/components/Chat.tsx"
         },
         {
+          "path": "src/components/ChatActionsMenu.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/components/ChatActionsMenu.tsx"
+        },
+        {
+          "path": "src/components/ChatActionsResponsive.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/components/ChatActionsResponsive.tsx"
+        },
+        {
           "path": "src/components/ChatHeader.tsx",
           "type": "registry:file",
           "target": "~/src/components/openclaude-chat/components/ChatHeader.tsx"
+        },
+        {
+          "path": "src/components/ChatStarButton.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/components/ChatStarButton.tsx"
+        },
+        {
+          "path": "src/components/ChatTitle.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/components/ChatTitle.tsx"
         },
         {
           "path": "src/components/ErrorNote.tsx",
@@ -53,6 +74,26 @@
           "path": "src/components/History.tsx",
           "type": "registry:file",
           "target": "~/src/components/openclaude-chat/components/History.tsx"
+        },
+        {
+          "path": "src/components/HistoryDrawer.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/components/HistoryDrawer.tsx"
+        },
+        {
+          "path": "src/components/HistoryResponsive.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/components/HistoryResponsive.tsx"
+        },
+        {
+          "path": "src/components/HistorySheet.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/components/HistorySheet.tsx"
+        },
+        {
+          "path": "src/components/HistorySidebar.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/components/HistorySidebar.tsx"
         },
         {
           "path": "src/components/HistoryTrigger.tsx",
@@ -113,6 +154,11 @@
           "path": "src/components/history/HistoryItem.tsx",
           "type": "registry:file",
           "target": "~/src/components/openclaude-chat/components/history/HistoryItem.tsx"
+        },
+        {
+          "path": "src/components/history/HistoryNewButton.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/components/history/HistoryNewButton.tsx"
         },
         {
           "path": "src/components/history/HistorySearch.tsx",
@@ -265,6 +311,11 @@
           "target": "~/src/components/openclaude-chat/hooks/useIsMobile.ts"
         },
         {
+          "path": "src/hooks/useMediaQuery.ts",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/hooks/useMediaQuery.ts"
+        },
+        {
           "path": "src/hooks/useModels.ts",
           "type": "registry:file",
           "target": "~/src/components/openclaude-chat/hooks/useModels.ts"
@@ -410,6 +461,11 @@
           "target": "~/src/components/openclaude-chat/ui/dialog.tsx"
         },
         {
+          "path": "src/ui/drawer.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/ui/drawer.tsx"
+        },
+        {
           "path": "src/ui/dropdown-menu.tsx",
           "type": "registry:file",
           "target": "~/src/components/openclaude-chat/ui/dropdown-menu.tsx"
@@ -433,6 +489,11 @@
           "path": "src/ui/separator.tsx",
           "type": "registry:file",
           "target": "~/src/components/openclaude-chat/ui/separator.tsx"
+        },
+        {
+          "path": "src/ui/sheet.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/ui/sheet.tsx"
         },
         {
           "path": "src/ui/skeleton.tsx",
