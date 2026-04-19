@@ -44,7 +44,11 @@ const components: Components = {
     );
   },
   code({ className, children }) {
-    const isBlock = className?.startsWith("language-");
+    // rehype-highlight PREFIXA "hljs " ao className original ("language-python")
+    // → o className que chega aqui e "hljs language-python". startsWith("language-")
+    // falha nesse caso, e o codigo block cai no ramo inline (bug visual).
+    // Checamos includes em vez de startsWith pra aceitar ambos.
+    const isBlock = className?.includes("language-") ?? false;
     if (isBlock) {
       return (
         <code className={cn("block p-4 overflow-x-auto font-mono text-sm", className)}>
