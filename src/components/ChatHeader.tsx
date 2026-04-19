@@ -1,43 +1,44 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { MoreHorizontal, Pencil, Star, StarOff } from "lucide-react";
-import { cn } from "../lib/utils.js";
-import { Button } from "../ui/button.js";
-import { LocaleSelect } from "./LocaleSelect.js";
-import { useTranslation } from "../i18n/index.js";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "../ui/tooltip.js";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu.js";
+import React, { useCallback, useRef } from "react"
+import { cn } from "../lib/utils.js"
+import { LocaleSelect } from "./LocaleSelect.js"
+import { TooltipProvider } from "../ui/tooltip.js"
+import { ChatTitle, type ChatTitleHandle } from "./ChatTitle.js"
+import { ChatStarButton } from "./ChatStarButton.js"
+import { ChatActionsMenu } from "./ChatActionsMenu.js"
 
 export interface ChatHeaderProps {
   /** Slot rendered at the far left, before star/title. Use for sidebar toggle, etc. */
-  leftContent?: React.ReactNode;
+  leftContent?: React.ReactNode
   /** Conversation title. When undefined, session-dependent elements are hidden. */
-  title?: string;
+  title?: string
   /** Whether the conversation is starred/bookmarked. */
-  starred?: boolean;
+  starred?: boolean
   /** Called when user toggles the star. */
-  onToggleStar?: () => void;
+  onToggleStar?: () => void
   /** Called when user renames the conversation. */
-  onRename?: (title: string) => void;
+  onRename?: (title: string) => void
   /** Show agent avatar+name instead of star+title. */
-  showAgent?: boolean;
+  showAgent?: boolean
   /** Agent avatar URL. Only used when showAgent=true. */
-  agentAvatar?: string;
+  agentAvatar?: string
   /** Agent display name. Only used when showAgent=true. */
-  agentName?: string;
+  agentName?: string
   /** Current locale slug. */
-  locale?: string;
+  locale?: string
   /** Called when user changes locale. */
-  onLocaleChange?: (locale: string) => void;
-  /** Show locale selector. Mirrors the Chat component flag. */
-  enableLocaleSelect?: boolean;
-  className?: string;
+  onLocaleChange?: (locale: string) => void
+  /** Show locale selector. Default: true. */
+  enableLocaleSelect?: boolean
+  className?: string
 }
 
+/**
+ * Compound header composing ChatTitle + ChatStarButton + ChatActionsMenu +
+ * LocaleSelect into the layout used by the default demo. Back-compat:
+ * public API unchanged. Internally delegates to the standalone subparts,
+ * so consumers who don't want this layout can import each subpart
+ * independently and place them anywhere (breadcrumb, toolbar, etc.).
+ */
 export function ChatHeader({
   leftContent,
   title,
@@ -52,48 +53,12 @@ export function ChatHeader({
   enableLocaleSelect = true,
   className,
 }: ChatHeaderProps) {
-  const { t } = useTranslation();
-  const hasSession = title !== undefined;
-  const [isRenaming, setIsRenaming] = useState(false);
-  const [draft, setDraft] = useState(title ?? "");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const hasSession = title !== undefined
+  const titleRef = useRef<ChatTitleHandle>(null)
 
-  useEffect(() => {
-    if (isRenaming) {
-      setDraft(title ?? "");
-      const timer = setTimeout(() => {
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [isRenaming, title]);
-
-  const commitRename = useCallback(() => {
-    const trimmed = draft.trim();
-    if (trimmed && trimmed !== title) {
-      onRename?.(trimmed);
-    }
-    setIsRenaming(false);
-  }, [draft, title, onRename]);
-
-  const cancelRename = useCallback(() => {
-    setDraft(title ?? "");
-    setIsRenaming(false);
-  }, [title]);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        commitRename();
-      } else if (e.key === "Escape") {
-        e.preventDefault();
-        cancelRename();
-      }
-    },
-    [commitRename, cancelRename],
-  );
+  const handleRenameClick = useCallback(() => {
+    titleRef.current?.startRename()
+  }, [])
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -121,81 +86,28 @@ export function ChatHeader({
             </>
           ) : hasSession ? (
             <>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 shrink-0"
-                    onClick={onToggleStar}
-                  >
-                    <Star
-                      className={cn(
-                        "h-4 w-4",
-                        starred
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-muted-foreground",
-                      )}
-                    />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  {starred ? t("history.unfavorite") : t("history.favorite")}
-                </TooltipContent>
-              </Tooltip>
-              {isRenaming ? (
-                <input
-                  ref={inputRef}
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  onBlur={commitRename}
-                  onKeyDown={handleKeyDown}
-                  className="min-w-0 flex-1 rounded border border-input bg-background px-1.5 py-0.5 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                />
-              ) : (
-                <span className="truncate text-sm font-medium">{title}</span>
-              )}
+              <ChatStarButton starred={starred} onToggle={onToggleStar} />
+              <ChatTitle ref={titleRef} title={title} onRename={onRename} />
             </>
           ) : (
             leftContent && null
           )}
         </div>
 
-        {/* Right: locale selector + menu */}
+        {/* Right: locale selector + actions menu */}
         <div className="flex shrink-0 items-center gap-0.5">
           {enableLocaleSelect && locale && onLocaleChange && (
             <LocaleSelect value={locale} onChange={onLocaleChange} />
           )}
-          {hasSession && !isRenaming && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => setIsRenaming(true)}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  {t("history.rename")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={onToggleStar}>
-                  {starred ? (
-                    <>
-                      <StarOff className="mr-2 h-4 w-4" />
-                      {t("history.unfavorite")}
-                    </>
-                  ) : (
-                    <>
-                      <Star className="mr-2 h-4 w-4" />
-                      {t("history.favorite")}
-                    </>
-                  )}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          {hasSession && (
+            <ChatActionsMenu
+              starred={starred}
+              onRename={handleRenameClick}
+              onToggleStar={onToggleStar}
+            />
           )}
         </div>
       </div>
     </TooltipProvider>
-  );
+  )
 }

@@ -1,13 +1,12 @@
 import React, { useCallback, useMemo, useState } from "react"
-import { MessageSquarePlus } from "lucide-react"
 import { cn } from "../lib/utils.js"
 import { TooltipProvider } from "../ui/tooltip.js"
-import { Button } from "../ui/button.js"
 import { Separator } from "../ui/separator.js"
 import { ScrollArea } from "../ui/scroll-area.js"
 import { HistorySearch } from "./history/HistorySearch.js"
 import { HistoryGroup } from "./history/HistoryGroup.js"
 import { HistoryDeleteDialog } from "./history/HistoryDeleteDialog.js"
+import { HistoryNewButton } from "./history/HistoryNewButton.js"
 import { useHistoryData, createLocalStorageTransport } from "./history/useHistoryData.js"
 import { createDefaultTransport, type ChatTransport } from "../transport.js"
 import { useHistoryContext } from "../hooks/HistoryProvider.js"
@@ -29,6 +28,15 @@ export interface HistoryProps {
   onNewConversation?: (id: string) => void
   /** Called after a conversation is deleted. */
   onDeleteConversation?: (id: string) => void
+  /**
+   * Called after a conversation is renamed (via the History panel's item menu).
+   * Receives the new title. Useful for consumers that derive URLs from the
+   * title (canonical slugs) and need to rewrite the router path.
+   *
+   * Not fired when rename happens via `<ChatHeader>` / `<ChatActionsMenu>` —
+   * those have their own `onRename` prop that the consumer wires separately.
+   */
+  onRenameConversation?: (id: string, newTitle: string) => void
   /** Locale for UI strings (accepts "pt-BR", "pt_br", "pt", etc). */
   locale?: string
   /** Translation overrides keyed by locale slug. */
@@ -62,6 +70,7 @@ function HistoryContent({
   onSelectConversation,
   onNewConversation,
   onDeleteConversation,
+  onRenameConversation,
   searchQuery: externalSearchQuery,
   onSearchChange,
   hideSearchInput,
@@ -129,6 +138,14 @@ function HistoryContent({
     [onSelectConversation],
   )
 
+  const handleRename = useCallback(
+    async (id: string, newTitle: string) => {
+      await renameConversation(id, newTitle)
+      onRenameConversation?.(id, newTitle)
+    },
+    [renameConversation, onRenameConversation],
+  )
+
   const handleDeleteRequest = useCallback(
     (id: string) => {
       for (const g of filteredGroups) {
@@ -153,13 +170,11 @@ function HistoryContent({
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className={cn("flex h-full w-[280px] flex-col border-r bg-background", className)}>
+      <div className={cn("flex h-full flex-col", className)}>
         {/* Header */}
         <div className="flex h-14 shrink-0 items-center justify-between px-3">
           <span className="text-sm font-semibold">{t("history.title")}</span>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleNew}>
-            <MessageSquarePlus className="h-4 w-4" />
-          </Button>
+          <HistoryNewButton onNew={handleNew} />
         </div>
 
         <Separator />
@@ -195,7 +210,7 @@ function HistoryContent({
                 group={group}
                 activeId={activeConversationId}
                 onSelect={handleSelect}
-                onRename={renameConversation}
+                onRename={handleRename}
                 onDelete={handleDeleteRequest}
                 onToggleStar={toggleStar}
               />
