@@ -3,6 +3,7 @@
 
 import type { Conversation } from "./components/history/types.js"
 import type { Message } from "./types.js"
+import { convertSDKMessages, type SDKMessage } from "./lib/sdk-to-message.js"
 
 // ── Tipos auxiliares ─────────────────────────────────────────────────────
 
@@ -108,7 +109,20 @@ export function createDefaultTransport(endpoint: string, token?: string): ChatTr
       if (params?.before) qs.set("before", params.before)
       const qsStr = qs.toString()
       const res = await request("GET", `/conversations/${encodeURIComponent(id)}/messages${qsStr ? `?${qsStr}` : ""}`)
-      return res.json()
+      const data = (await res.json()) as {
+        messages?: SDKMessage[]
+        hasMore?: boolean
+        cursor?: string | null
+      }
+      // Backbone devolve mensagens no formato SDK (JSONL do Claude CLI).
+      // Convertemos para o formato Message do chat UI (parts, role, etc.)
+      // para que o consumer receba dados prontos pra renderizar.
+      const messages = convertSDKMessages(data.messages ?? [])
+      return {
+        messages,
+        hasMore: data.hasMore ?? false,
+        cursor: data.cursor ?? null,
+      }
     },
 
     async *sendMessage(id, params) {

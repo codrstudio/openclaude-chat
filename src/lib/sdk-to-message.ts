@@ -249,11 +249,16 @@ export function convertSDKMessages(sdkMessages: SDKMessage[]): Message[] {
       // Simple string content (user prompt)
       if (typeof content === "string" && content.trim()) {
         finalizeAssistant();
+        // Backbone (Claude CLI via openclaude-sdk) persiste user content com
+        // wrapper `-\n...\n` — um delimitador interno do storage. No render
+        // como markdown, o `-` no inicio de linha vira bullet list. Normalizamos
+        // aqui: strip do prefix + trim no trailing newline.
+        const normalized = content.replace(/^-\n/, "").replace(/\n$/, "");
         result.push({
           id: seqId("user"),
           role: "user",
-          content: content,
-          parts: [{ type: "text", text: content }],
+          content: normalized,
+          parts: [{ type: "text", text: normalized }],
         });
         continue;
       }
