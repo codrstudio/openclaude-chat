@@ -23,7 +23,7 @@
     "build:css": "postcss src/styles.css -o dist/styles.css",
     "typecheck": "tsc --noEmit",
     "registry:source": "node scripts/build-registry.mjs",
-    "registry:build": "npm run registry:source && shadcn build --output ./registry"
+    "registry:build": "npm run registry:source && npx shadcn@latest build --output ./registry"
   },
   "peerDependencies": {
     "react": "^18 || ^19",
@@ -51,7 +51,8 @@
     "rehype-highlight": "^7",
     "remark-gfm": "^4",
     "sucrase": "^3.35.1",
-    "tailwind-merge": "^3"
+    "tailwind-merge": "^3",
+    "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",
