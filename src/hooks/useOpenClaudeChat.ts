@@ -29,6 +29,14 @@ export interface UseOpenClaudeChatOptions {
   turnOptions?: Record<string, unknown>;
   /** Modelo selecionado. Enviado como `model` no body de /conversations e /conversations/:id/messages. */
   model?: string;
+  /**
+   * Agent ID enviado como `agentId` no body do POST /conversations quando o hook
+   * precisa criar uma sessao (i.e., `sessionId` foi omitido pelo consumer). Sem
+   * isto, o servidor aplica seu default (`system.main`) — o que pode falhar com
+   * 403 se a api-key do consumer nao autorizar esse agente. Sempre passe quando
+   * souber qual agente a conversa pertence.
+   */
+  agentId?: string;
   /** Customiza fetch (ex: para injetar credenciais). */
   fetcher?: typeof fetch;
   /**
@@ -64,6 +72,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     sessionOptions,
     turnOptions,
     model,
+    agentId,
     fetcher,
     maxTurnMs = 600_000,
   } = options;
@@ -88,7 +97,11 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     const res = await doFetch(`${endpoint}/conversations`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ options: sessionOptions ?? {}, ...(model ? { model } : {}) }),
+      body: JSON.stringify({
+        options: sessionOptions ?? {},
+        ...(model ? { model } : {}),
+        ...(agentId ? { agentId } : {}),
+      }),
     });
     if (!res.ok) {
       throw new Error(`Failed to create session: HTTP ${res.status}`);
@@ -96,7 +109,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     const data = (await res.json()) as { sessionId: string };
     setSessionId(data.sessionId);
     return data.sessionId;
-  }, [sessionId, endpoint, token, sessionOptions, model, doFetch]);
+  }, [sessionId, endpoint, token, sessionOptions, model, agentId, doFetch]);
 
   // ──────────────────────────────────────────────────────────────
   // Stream parser — consome SSE do endpoint /conversations/:id/messages
