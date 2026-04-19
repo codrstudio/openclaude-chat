@@ -13,6 +13,8 @@ export interface MessageBubbleProps {
   message: Message;
   isStreaming?: boolean;
   displayRenderers?: DisplayRendererMap;
+  /** Show turn metadata footer (duration, cost, tokens, model). Default: true. */
+  enableTurnMeta?: boolean;
   className?: string;
 }
 
@@ -104,7 +106,7 @@ function formatTokens(n: number): string {
   return String(n);
 }
 
-export const MessageBubble = memo(function MessageBubble({ message, isStreaming, displayRenderers, className }: MessageBubbleProps) {
+export const MessageBubble = memo(function MessageBubble({ message, isStreaming, displayRenderers, enableTurnMeta = true, className }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const hasParts = Array.isArray(message.parts) && message.parts.length > 0;
   const hasText = typeof message.content === "string" && message.content.length > 0;
@@ -152,7 +154,7 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
           <CopyButton text={extractText(message)} />
         </div>
       )}
-      {!isUser && message.turnMeta && !isStreaming && (
+      {!isUser && enableTurnMeta && message.turnMeta && !isStreaming && (
         <TurnFooter meta={message.turnMeta} />
       )}
     </div>
@@ -162,5 +164,6 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
   && prev.message.turnMeta === next.message.turnMeta
   && prev.isStreaming === next.isStreaming
   && prev.displayRenderers === next.displayRenderers
+  && prev.enableTurnMeta === next.enableTurnMeta
   && prev.className === next.className
 );

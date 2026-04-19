@@ -34,12 +34,18 @@ export interface ChatProps {
   token?: string;
   /** Sessao live existente. Se omitida, o hook cria uma via POST /conversations. */
   sessionId?: string;
+  /**
+   * Agent ID enviado ao criar uma nova sessao (POST /conversations). Essencial
+   * quando a api-key do consumer so autoriza agentes especificos — sem isto, o
+   * servidor usa seu default (`system.main`) e retorna 403. Omitir e seguro
+   * apenas se `sessionId` ja esta definido e o Chat nunca precisar criar.
+   */
+  agentId?: string;
   initialMessages?: Message[];
   sessionOptions?: Record<string, unknown>;
   turnOptions?: Record<string, unknown>;
   displayRenderers?: DisplayRendererMap;
   placeholder?: string;
-  header?: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
   enableAttachments?: boolean;
@@ -48,6 +54,8 @@ export interface ChatProps {
   enableModelSelect?: boolean;
   /** Mostra seletor de locale no bottomSlot do input. Default: true. */
   enableLocaleSelect?: boolean;
+  /** Mostra rodape de metadados do turno (duracao, custo, tokens, modelo). Default: true. */
+  enableTurnMeta?: boolean;
   /** Locale inicial (aceita "pt-BR", "pt_br", "pt", etc). Default: "en-US". */
   locale?: string;
   /** Callback quando o usuario troca o locale via selector. */
@@ -72,6 +80,7 @@ interface ChatContentProps {
   placeholder?: string;
   enableAttachments?: boolean;
   enableVoice?: boolean;
+  enableTurnMeta?: boolean;
   emptyState?: React.ReactNode;
   bottomSlot?: React.ReactNode;
 }
@@ -95,7 +104,7 @@ function NoSessionState({ children }: { children?: React.ReactNode }) {
   );
 }
 
-function ChatContent({ displayRenderers, placeholder, enableAttachments = true, enableVoice = true, emptyState, bottomSlot }: ChatContentProps) {
+function ChatContent({ displayRenderers, placeholder, enableAttachments = true, enableVoice = true, enableTurnMeta = true, emptyState, bottomSlot }: ChatContentProps) {
   const { messages, input, setInput, handleSubmit, isLoading, stop, error, reload } = useChatContext();
 
   return (
@@ -107,6 +116,7 @@ function ChatContent({ displayRenderers, placeholder, enableAttachments = true, 
         error={error ?? undefined}
         onRetry={reload}
         emptyState={emptyState}
+        enableTurnMeta={enableTurnMeta}
       />
       <div className="px-4 pb-4">
         <MessageInput
@@ -129,18 +139,19 @@ export function Chat({
   endpoint,
   token,
   sessionId,
+  agentId,
   initialMessages,
   sessionOptions,
   turnOptions,
   displayRenderers,
   placeholder,
-  header,
   footer,
   className,
   enableAttachments,
   enableVoice,
   enableModelSelect,
   enableLocaleSelect = true,
+  enableTurnMeta = true,
   locale: localeProp,
   onLocaleChange,
   messages: messagesProp,
@@ -210,7 +221,6 @@ export function Chat({
       <LocaleProvider locale={currentLocale} messages={messagesProp} locales={localesProp}>
         <div className={outerClass}>
           <div className={innerClass}>
-            {header}
             <NoSessionState>{emptyState}</NoSessionState>
             {footer}
           </div>
@@ -226,6 +236,7 @@ export function Chat({
         endpoint={endpoint}
         token={token}
         sessionId={sessionId}
+        agentId={agentId}
         initialMessages={initialMessages}
         sessionOptions={mergedSessionOptions}
         turnOptions={turnOptions}
@@ -234,12 +245,12 @@ export function Chat({
       >
         <div className={outerClass}>
           <div className={innerClass}>
-            {header}
             <ChatContent
               displayRenderers={displayRenderers}
               placeholder={placeholder}
               enableAttachments={enableAttachments}
               enableVoice={enableVoice}
+              enableTurnMeta={enableTurnMeta}
               emptyState={emptyState}
               bottomSlot={bottomSlot}
             />

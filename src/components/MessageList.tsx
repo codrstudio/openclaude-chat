@@ -25,6 +25,8 @@ export interface MessageListProps {
   onLoadMore?: () => void;
   /** Whether older messages are currently being loaded. */
   isLoadingMore?: boolean;
+  /** Show turn metadata footer (duration, cost, tokens, model). Default: true. */
+  enableTurnMeta?: boolean;
 }
 
 function LoadingOlder() {
@@ -63,7 +65,7 @@ function DefaultWelcome() {
   );
 }
 
-export function MessageList({ messages, isLoading, displayRenderers, className, error, onRetry, emptyState, hasMore, onLoadMore, isLoadingMore }: MessageListProps) {
+export function MessageList({ messages, isLoading, displayRenderers, className, error, onRetry, emptyState, hasMore, onLoadMore, isLoadingMore, enableTurnMeta }: MessageListProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const isFollowingRef = useRef(true);
   const loadMoreDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -174,6 +176,7 @@ export function MessageList({ messages, isLoading, displayRenderers, className, 
                     message={message}
                     isStreaming={virtualRow.index === lastAssistantIndex && isLoading && messages[messages.length - 1]?.role === "assistant"}
                     displayRenderers={displayRenderers}
+                    enableTurnMeta={enableTurnMeta}
                   />
                 </div>
               );
