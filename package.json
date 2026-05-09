@@ -1,26 +1,15 @@
 {
   "name": "@codrstudio/openclaude-chat",
-  "version": "0.4.3",
-  "description": "Rich chat UI component — HTTP+SSE counterpart to @codrstudio/openclaude-sdk. Shadcn-native (consumes host tokens).",
+  "version": "0.5.1",
+  "description": "Rich chat UI component — distributed as a shadcn registry (source-copy). HTTP+SSE counterpart to @codrstudio/openclaude-sdk.",
+  "private": true,
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./styles.css": "./dist/styles.css"
-  },
   "files": [
-    "dist",
     "src",
+    "registry",
     "README.md"
   ],
   "scripts": {
-    "build": "tsc && postcss src/styles.css -o dist/styles.css",
-    "build:ts": "tsc",
-    "build:css": "postcss src/styles.css -o dist/styles.css",
     "typecheck": "tsc --noEmit",
     "registry:source": "node scripts/build-registry.mjs",
     "registry:build": "npm run registry:source && npx shadcn@latest build --output ./registry"
@@ -55,12 +44,8 @@
     "vaul": "^1.1.2"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "cssnano": "^7.1.4",
-    "postcss": "^8.5.9",
-    "postcss-cli": "^11.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
