@@ -131,6 +131,8 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
                   <PartRenderer
                     part={part as Parameters<typeof PartRenderer>[0]["part"]}
                     isStreaming={isStreaming}
+                    messageId={message.id}
+                    partIndex={i}
                   />
                 </PartErrorBoundary>
               ))}

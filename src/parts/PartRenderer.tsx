@@ -21,10 +21,15 @@ import type {
 import { AskUserQuestionForm } from "./AskUserQuestionForm.js";
 import { ArtifactCard } from "./artifacts/ArtifactCard.js";
 import type { ArtifactPart } from "../types.js";
+import { parseArtifacts } from "../artifacts/parser.js";
+import { useChatContext } from "../hooks/ChatProvider.js";
 
 export interface PartRendererProps {
   part: MessagePart;
   isStreaming?: boolean;
+  /** Provided by MessageBubble — used pra dedup de artifact por identifier. */
+  messageId?: string;
+  partIndex?: number;
 }
 
 // ─── Attachment sub-components ────────────────────────────────────────────────
@@ -54,9 +59,46 @@ function AttachmentTextBlock({ filename, content }: { filename: string; content:
   );
 }
 
+// ─── Artifact-aware text ──────────────────────────────────────────────────────
+// Parseia <antArtifact> dentro de uma text part e renderiza intercalado.
+// Se o id do artifact apareceu de novo numa mensagem posterior, este aqui
+// é "superseded" — placeholder discreto.
+
+function ArtifactAwareText({
+  text,
+  messageId,
+  partIndex,
+}: {
+  text: string;
+  messageId?: string;
+  partIndex?: number;
+}) {
+  const { artifactLatestAddress } = useChatContext();
+  if (!text.includes("<antArtifact")) {
+    return <Markdown>{text}</Markdown>;
+  }
+  const segs = parseArtifacts(text);
+  if (segs.every((s) => s.kind === "text")) {
+    return <Markdown>{text}</Markdown>;
+  }
+  let tagIdx = 0;
+  return (
+    <div className="flex flex-col gap-3">
+      {segs.map((s, i) => {
+        if (s.kind === "text") return <Markdown key={i}>{s.value}</Markdown>;
+        const localTagIdx = tagIdx++;
+        const myAddr = `${messageId ?? "?"}:${partIndex ?? 0}:${localTagIdx}`;
+        const winning = artifactLatestAddress?.get(s.part.identifier);
+        const superseded = winning != null && winning !== myAddr;
+        return <ArtifactCard key={i} part={s.part} superseded={superseded} />;
+      })}
+    </div>
+  );
+}
+
 // ─── Main renderer ────────────────────────────────────────────────────────────
 
-export const PartRenderer = memo(function PartRenderer({ part, isStreaming }: PartRendererProps) {
+export const PartRenderer = memo(function PartRenderer({ part, isStreaming, messageId, partIndex }: PartRendererProps) {
   const { t } = useTranslation();
   switch (part.type) {
     case "text": {
@@ -69,7 +111,7 @@ export const PartRenderer = memo(function PartRenderer({ part, isStreaming }: Pa
         const filename = match?.[1] ?? header;
         return <AttachmentTextBlock filename={filename} content={body} />;
       }
-      return <Markdown>{p.text}</Markdown>;
+      return <ArtifactAwareText text={p.text} messageId={messageId} partIndex={partIndex} />;
     }
 
     case "reasoning": {

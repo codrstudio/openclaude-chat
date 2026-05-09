@@ -26,6 +26,7 @@
         "embla-carousel-react",
         "framer-motion",
         "lucide-react",
+        "mermaid",
         "react-markdown",
         "recharts",
         "rehype-highlight",
@@ -44,6 +45,11 @@
           "path": "src/artifacts/compile.ts",
           "type": "registry:file",
           "target": "~/src/components/openclaude-chat/artifacts/compile.ts"
+        },
+        {
+          "path": "src/artifacts/parser.ts",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/artifacts/parser.ts"
         },
         {
           "path": "src/artifacts/runtime.ts",
@@ -304,6 +310,31 @@
           "path": "src/parts/artifacts/ArtifactCard.tsx",
           "type": "registry:file",
           "target": "~/src/components/openclaude-chat/parts/artifacts/ArtifactCard.tsx"
+        },
+        {
+          "path": "src/parts/artifacts/renderers/CodeRenderer.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/parts/artifacts/renderers/CodeRenderer.tsx"
+        },
+        {
+          "path": "src/parts/artifacts/renderers/HtmlRenderer.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/parts/artifacts/renderers/HtmlRenderer.tsx"
+        },
+        {
+          "path": "src/parts/artifacts/renderers/MermaidRenderer.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/parts/artifacts/renderers/MermaidRenderer.tsx"
+        },
+        {
+          "path": "src/parts/artifacts/renderers/ReactRenderer.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/parts/artifacts/renderers/ReactRenderer.tsx"
+        },
+        {
+          "path": "src/parts/artifacts/renderers/SvgRenderer.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/parts/artifacts/renderers/SvgRenderer.tsx"
         },
         {
           "path": "src/styles.css",
