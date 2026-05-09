@@ -19,7 +19,9 @@ import type {
   StatusToastPart,
   CompactBoundaryPart,
   PromptSuggestionPart,
+  AskUserQuestionPart,
 } from "../types.js";
+import { AskUserQuestionForm } from "./AskUserQuestionForm.js";
 
 const HEAVY_RENDERERS = new Set([
   "chart", "map", "table",
@@ -203,6 +205,11 @@ export const PartRenderer = memo(function PartRenderer({ part, isStreaming, disp
           <span className="flex-1">{p.suggestion}</span>
         </div>
       );
+    }
+
+    case "ask-user-question": {
+      const p = part as AskUserQuestionPart;
+      return <AskUserQuestionForm part={p} />;
     }
 
     default:

@@ -36,6 +36,17 @@ export const enUS = {
   "part.expand": "Expand",
   "part.compactBoundary": "Conversation compacted",
 
+  // AskUserQuestion
+  "askUser.title": "Waiting for your answer",
+  "askUser.submit": "Submit",
+  "askUser.submitting": "Sending…",
+  "askUser.cancel": "Cancel",
+  "askUser.cancelled": "Cancelled",
+  "askUser.resolved": "Answered",
+  "askUser.errorSubmit": "Failed to submit answer",
+  "askUser.multiSelectHint": "Multiple choice",
+  "askUser.progress": "{current} of {total}",
+
   // PartErrorBoundary
   "partError.default": "Failed to render block",
 

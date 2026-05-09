@@ -38,6 +38,17 @@ export const ptBR: TranslationKeys = {
   "part.expand": "Expandir",
   "part.compactBoundary": "Conversa compactada",
 
+  // AskUserQuestion
+  "askUser.title": "Aguardando sua resposta",
+  "askUser.submit": "Responder",
+  "askUser.submitting": "Enviando…",
+  "askUser.cancel": "Cancelar",
+  "askUser.cancelled": "Cancelado",
+  "askUser.resolved": "Respondido",
+  "askUser.errorSubmit": "Falha ao enviar resposta",
+  "askUser.multiSelectHint": "Múltipla escolha",
+  "askUser.progress": "{current} de {total}",
+
   // PartErrorBoundary
   "partError.default": "Falha ao renderizar bloco",
 

@@ -33,6 +33,40 @@ export type CompactBoundaryPart = { type: "compact-boundary"; savedTokens?: numb
 /** Sugestão de próxima pergunta emitida pelo CLI. */
 export type PromptSuggestionPart = { type: "prompt-suggestion"; suggestion: string };
 
+/** Schema da tool nativa AskUserQuestion (1-4 perguntas multiple-choice). */
+export interface AskUserQuestionOption {
+  label: string;
+  description: string;
+  preview?: string;
+}
+export interface AskUserQuestionItem {
+  question: string;
+  header: string;
+  options: AskUserQuestionOption[];
+  multiSelect: boolean;
+}
+export interface AskUserQuestionAnnotation {
+  preview?: string;
+  notes?: string;
+}
+export interface AskUserQuestionAnswers {
+  answers: Record<string, string>;
+  annotations?: Record<string, AskUserQuestionAnnotation>;
+}
+
+/** Pergunta interativa emitida pelo agente — renderizada como form inline. */
+export type AskUserQuestionPart = {
+  type: "ask-user-question";
+  callId: string;
+  questions: AskUserQuestionItem[];
+  /** Set quando o usuário respondeu OU cancelou. */
+  resolved?: AskUserQuestionAnswers | { cancelled: true };
+  /** True enquanto a resposta está sendo enviada ao server. */
+  submitting?: boolean;
+  /** Mensagem de erro se POST falhou. */
+  error?: string;
+};
+
 export type MessagePart =
   | TextPart
   | ReasoningPart
@@ -42,6 +76,7 @@ export type MessagePart =
   | StatusToastPart
   | CompactBoundaryPart
   | PromptSuggestionPart
+  | AskUserQuestionPart
   | { type: string };
 
 export type MessageRole = "user" | "assistant";

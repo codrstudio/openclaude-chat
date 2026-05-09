@@ -85,6 +85,18 @@ export interface ChatProps {
    * `initialMessages` ou gerencia o historico fora.
    */
   autoLoadHistory?: boolean;
+  /**
+   * Habilita a UI de form interativo pra tool nativa AskUserQuestion.
+   * Quando true, o Chat:
+   * - Adiciona `clientCapabilities.askUserQuestion: true` ao body do
+   *   POST /conversations (servidor decide se respeita)
+   * - Renderiza o form do part `ask-user-question`
+   *
+   * Default: false. Ligue só em apps onde o usuário deve poder responder
+   * perguntas estruturadas do agente. Apps de chat unidirecional (notificações,
+   * onboarding sem interação) deixam desligado.
+   */
+  enableAskUserQuestion?: boolean;
   emptyState?: React.ReactNode;
   /**
    * Max-width do conteudo do chat (mensagens + input). O chat se centraliza
@@ -182,6 +194,7 @@ export function Chat({
   fetcher,
   transport,
   autoLoadHistory = true,
+  enableAskUserQuestion = false,
   emptyState,
   maxWidth = "3xl",
 }: ChatProps) {
@@ -269,6 +282,7 @@ export function Chat({
         fetcher={fetcher}
         transport={transport}
         autoLoadHistory={autoLoadHistory}
+        clientCapabilities={enableAskUserQuestion ? { askUserQuestion: true } : undefined}
       >
         <div className={outerClass}>
           <div className={innerClass}>

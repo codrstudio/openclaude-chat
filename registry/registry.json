@@ -371,6 +371,11 @@
           "target": "~/src/components/openclaude-chat/lib/utils.ts"
         },
         {
+          "path": "src/parts/AskUserQuestionForm.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/parts/AskUserQuestionForm.tsx"
+        },
+        {
           "path": "src/parts/PartErrorBoundary.tsx",
           "type": "registry:file",
           "target": "~/src/components/openclaude-chat/parts/PartErrorBoundary.tsx"

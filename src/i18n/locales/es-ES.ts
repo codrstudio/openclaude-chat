@@ -38,6 +38,17 @@ export const esES: TranslationKeys = {
   "part.expand": "Expandir",
   "part.compactBoundary": "Conversación compactada",
 
+  // AskUserQuestion
+  "askUser.title": "Esperando tu respuesta",
+  "askUser.submit": "Responder",
+  "askUser.submitting": "Enviando…",
+  "askUser.cancel": "Cancelar",
+  "askUser.cancelled": "Cancelado",
+  "askUser.resolved": "Respondido",
+  "askUser.errorSubmit": "Error al enviar respuesta",
+  "askUser.multiSelectHint": "Múltiple elección",
+  "askUser.progress": "{current} de {total}",
+
   // PartErrorBoundary
   "partError.default": "Error al renderizar bloque",
 

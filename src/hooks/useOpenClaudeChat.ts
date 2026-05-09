@@ -58,6 +58,12 @@ export interface UseOpenClaudeChatOptions {
    * Default: `true`. Desligue se voce gerencia o historico no consumer.
    */
   autoLoadHistory?: boolean;
+  /**
+   * Capabilities do cliente, enviadas no body do POST /conversations.
+   * O servidor pode usar isso pra ligar/desligar features no SDK conforme
+   * o que a UI suporta. Hoje suportado: `askUserQuestion`.
+   */
+  clientCapabilities?: { askUserQuestion?: boolean };
 }
 
 export interface UseOpenClaudeChatReturn {
@@ -72,6 +78,13 @@ export interface UseOpenClaudeChatReturn {
   stop: () => void;
   reload: () => Promise<void>;
   clear: () => void;
+  /** Submit answers pra uma AskUserQuestion pendente. */
+  respondToAskUserQuestion: (
+    callId: string,
+    response: { answers: Record<string, string>; annotations?: Record<string, { preview?: string; notes?: string }> },
+  ) => Promise<void>;
+  /** Cancela uma AskUserQuestion pendente. */
+  cancelAskUserQuestion: (callId: string) => Promise<void>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -90,6 +103,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     maxTurnMs = 600_000,
     transport: customTransport,
     autoLoadHistory = true,
+    clientCapabilities,
   } = options;
 
   const [sessionId, setSessionId] = useState<string | null>(providedSessionId ?? null);
@@ -158,6 +172,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
         options: sessionOptions ?? {},
         ...(model ? { model } : {}),
         ...(agentId ? { agentId } : {}),
+        ...(clientCapabilities ? { clientCapabilities } : {}),
       }),
     });
     if (!res.ok) {
@@ -166,7 +181,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     const data = (await res.json()) as { sessionId: string };
     setSessionId(data.sessionId);
     return data.sessionId;
-  }, [sessionId, endpoint, token, sessionOptions, model, agentId, doFetch]);
+  }, [sessionId, endpoint, token, sessionOptions, model, agentId, clientCapabilities, doFetch]);
 
   // ──────────────────────────────────────────────────────────────
   // Stream parser — consome SSE do endpoint /conversations/:id/messages
@@ -485,6 +500,41 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
           return;
         }
 
+        // AskUserQuestion request — emitido pelo bridge (custom event).
+        if (msg.type === "ask_user_question_request") {
+          const r = msg as { request?: { callId?: string; input?: { questions?: unknown[] } } };
+          const req = r.request;
+          if (req?.callId && Array.isArray(req.input?.questions)) {
+            accumulatedParts.push({
+              type: "ask-user-question",
+              callId: req.callId,
+              questions: req.input.questions,
+            } as MessagePart);
+            commit();
+          }
+          return;
+        }
+        // AskUserQuestion resolved — vem como replay (history) ou após POST.
+        if (msg.type === "ask_user_question_resolved") {
+          const r = msg as { callId?: string; response?: { answers?: Record<string, string>; annotations?: Record<string, unknown> }; cancelled?: boolean };
+          if (r.callId) {
+            for (const p of accumulatedParts) {
+              if (p.type === "ask-user-question" && (p as { callId: string }).callId === r.callId) {
+                if (r.cancelled) {
+                  (p as { resolved?: unknown }).resolved = { cancelled: true };
+                } else if (r.response) {
+                  (p as { resolved?: unknown }).resolved = r.response;
+                }
+                (p as { submitting?: boolean }).submitting = false;
+                (p as { error?: string }).error = undefined;
+                break;
+              }
+            }
+            commit();
+          }
+          return;
+        }
+
         // Prompt suggestions
         if (msg.type === "prompt_suggestion") {
           const ps = msg as { suggestion?: string };
@@ -764,6 +814,89 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     return () => abortRef.current?.abort();
   }, []);
 
+  // ─── AskUserQuestion: submit + cancel ──────────────────────────────────
+  const updatePart = useCallback(
+    (callId: string, patch: (p: Record<string, unknown>) => void) => {
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.role !== "assistant") return m;
+          let touched = false;
+          const newParts = m.parts.map((p) => {
+            if (p.type === "ask-user-question" && (p as { callId?: string }).callId === callId) {
+              const next = { ...p } as Record<string, unknown>;
+              patch(next);
+              touched = true;
+              return next as typeof p;
+            }
+            return p;
+          });
+          return touched ? { ...m, parts: newParts } : m;
+        }),
+      );
+    },
+    [],
+  );
+
+  const respondToAskUserQuestion = useCallback(
+    async (callId: string, response: { answers: Record<string, string>; annotations?: Record<string, { preview?: string; notes?: string }> }) => {
+      if (!sessionId) throw new Error("respondToAskUserQuestion: no sessionId");
+      const transport = customTransport ?? createDefaultTransport(endpoint, token);
+      if (!transport.respondToAskUserQuestion) {
+        throw new Error("transport does not implement respondToAskUserQuestion");
+      }
+      updatePart(callId, (p) => {
+        p.submitting = true;
+        p.error = undefined;
+      });
+      try {
+        await transport.respondToAskUserQuestion(sessionId, callId, response);
+        updatePart(callId, (p) => {
+          p.submitting = false;
+          p.resolved = response;
+          p.error = undefined;
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        updatePart(callId, (p) => {
+          p.submitting = false;
+          p.error = message;
+        });
+        throw err;
+      }
+    },
+    [sessionId, customTransport, endpoint, token, updatePart],
+  );
+
+  const cancelAskUserQuestion = useCallback(
+    async (callId: string) => {
+      if (!sessionId) throw new Error("cancelAskUserQuestion: no sessionId");
+      const transport = customTransport ?? createDefaultTransport(endpoint, token);
+      if (!transport.cancelAskUserQuestion) {
+        throw new Error("transport does not implement cancelAskUserQuestion");
+      }
+      updatePart(callId, (p) => {
+        p.submitting = true;
+        p.error = undefined;
+      });
+      try {
+        await transport.cancelAskUserQuestion(sessionId, callId);
+        updatePart(callId, (p) => {
+          p.submitting = false;
+          p.resolved = { cancelled: true };
+          p.error = undefined;
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        updatePart(callId, (p) => {
+          p.submitting = false;
+          p.error = message;
+        });
+        throw err;
+      }
+    },
+    [sessionId, customTransport, endpoint, token, updatePart],
+  );
+
   return {
     sessionId,
     messages,
@@ -776,5 +909,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     stop,
     reload,
     clear,
+    respondToAskUserQuestion,
+    cancelAskUserQuestion,
   };
 }

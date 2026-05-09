@@ -2,7 +2,7 @@
 // Componentes nunca chamam fetch diretamente; usam um ChatTransport.
 
 import type { Conversation } from "./components/history/types.js"
-import type { Message } from "./types.js"
+import type { Message, AskUserQuestionAnswers } from "./types.js"
 import { convertSDKMessages, type SDKMessage } from "./lib/sdk-to-message.js"
 
 // ── Tipos auxiliares ─────────────────────────────────────────────────────
@@ -47,6 +47,16 @@ export interface ChatTransport {
     params: { content: string; attachments?: File[] },
   ): AsyncGenerator<unknown> | ReadableStream<unknown>
   getAttachmentUrl(conversationId: string, file: string): string
+
+  // --- AskUserQuestion (tool nativa do CLI) ---
+  /** Responde uma pergunta interativa. answers: { questionText: optionLabel }. */
+  respondToAskUserQuestion?(
+    conversationId: string,
+    callId: string,
+    response: AskUserQuestionAnswers,
+  ): Promise<void>
+  /** Cancela uma pergunta pendente (envia deny). */
+  cancelAskUserQuestion?(conversationId: string, callId: string): Promise<void>
 }
 
 // ── Transport default (fetch) ────────────────────────────────────────────
@@ -142,6 +152,21 @@ export function createDefaultTransport(endpoint: string, token?: string): ChatTr
     getAttachmentUrl(id, file) {
       const tokenQs = token ? `?token=${encodeURIComponent(token)}` : ""
       return `${endpoint}/conversations/${encodeURIComponent(id)}/attachments/${encodeURIComponent(file)}${tokenQs}`
+    },
+
+    async respondToAskUserQuestion(id, callId, response) {
+      await request(
+        "POST",
+        `/conversations/${encodeURIComponent(id)}/ask-user-question/${encodeURIComponent(callId)}`,
+        response,
+      )
+    },
+
+    async cancelAskUserQuestion(id, callId) {
+      await request(
+        "DELETE",
+        `/conversations/${encodeURIComponent(id)}/ask-user-question/${encodeURIComponent(callId)}`,
+      )
     },
   }
 }
