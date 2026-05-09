@@ -36,6 +36,7 @@ export const esES: TranslationKeys = {
   // PartRenderer
   "part.collapse": "Colapsar",
   "part.expand": "Expandir",
+  "part.compactBoundary": "Conversación compactada",
 
   // PartErrorBoundary
   "partError.default": "Error al renderizar bloque",

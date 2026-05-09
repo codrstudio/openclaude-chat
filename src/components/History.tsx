@@ -66,8 +66,8 @@ function HistoryContent({
   endpoint,
   token,
   transport: customTransport,
-  activeConversationId = null,
-  onSelectConversation,
+  activeConversationId: customActiveId,
+  onSelectConversation: customOnSelect,
   onNewConversation,
   onDeleteConversation,
   onRenameConversation,
@@ -78,7 +78,26 @@ function HistoryContent({
 }: Omit<HistoryProps, "locale">) {
   const { t } = useTranslation()
 
-  // Resolve transport: custom > default (endpoint) > localStorage mock
+  // Try to read tudo que o Provider possa fornecer (agentId, transport,
+  // active conversation, registerRefresh). Props diretas têm precedência.
+  let ctxAgentId: string | undefined
+  let ctxRegisterRefresh: ((fn: () => Promise<void>) => void) | undefined
+  let ctxTransport: ChatTransport | undefined
+  let ctxActiveId: string | null | undefined
+  let ctxSetActive: ((id: string | null) => void) | undefined
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const ctx = useHistoryContext()
+    ctxAgentId = ctx.agentId
+    ctxRegisterRefresh = ctx.registerRefresh
+    ctxTransport = ctx.transport
+    ctxActiveId = ctx.activeConversationId
+    ctxSetActive = ctx.setActiveConversation
+  } catch {
+    // Not inside HistoryProvider — props diretas viram a única fonte.
+  }
+
+  // Resolve transport: prop > context > default (endpoint) > localStorage mock
   const transport = useMemo(() => {
     if (customTransport) {
       if (endpoint) {
@@ -89,21 +108,15 @@ function HistoryContent({
       }
       return customTransport
     }
+    if (ctxTransport) return ctxTransport
     if (endpoint) return createDefaultTransport(endpoint, token)
     return createLocalStorageTransport()
-  }, [customTransport, endpoint, token])
+  }, [customTransport, ctxTransport, endpoint, token])
 
-  // Try to read agentId and registerRefresh from HistoryProvider context (if available)
-  let ctxAgentId: string | undefined
-  let ctxRegisterRefresh: ((fn: () => Promise<void>) => void) | undefined
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const ctx = useHistoryContext()
-    ctxAgentId = ctx.agentId
-    ctxRegisterRefresh = ctx.registerRefresh
-  } catch {
-    // Not inside HistoryProvider — that's fine, agentId stays undefined
-  }
+  // Resolve active id e onSelect: prop > context > undefined.
+  const activeConversationId =
+    customActiveId !== undefined ? customActiveId : (ctxActiveId ?? null)
+  const onSelectConversation = customOnSelect ?? ctxSetActive
 
   const {
     filteredGroups,

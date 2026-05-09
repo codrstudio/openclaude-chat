@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import { Paperclip, ChevronDown } from "lucide-react";
+import { Paperclip, ChevronDown, Loader2, Check, Sparkles } from "lucide-react";
 import { Markdown } from "../components/Markdown.js";
 import { LazyRender } from "../components/LazyRender.js";
 import { ReasoningBlock } from "./ReasoningBlock.js";
@@ -11,7 +11,15 @@ import type { DisplayRendererMap } from "../display/registry.js";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "../ui/collapsible.js";
 import { cn } from "../lib/utils.js";
 import { useTranslation } from "../i18n/index.js";
-import type { MessagePart, TextPart, ReasoningPart, ToolInvocationPart } from "../types.js";
+import type {
+  MessagePart,
+  TextPart,
+  ReasoningPart,
+  ToolInvocationPart,
+  StatusToastPart,
+  CompactBoundaryPart,
+  PromptSuggestionPart,
+} from "../types.js";
 
 const HEAVY_RENDERERS = new Set([
   "chart", "map", "table",
@@ -54,6 +62,7 @@ function AttachmentTextBlock({ filename, content }: { filename: string; content:
 // ─── Main renderer ────────────────────────────────────────────────────────────
 
 export const PartRenderer = memo(function PartRenderer({ part, isStreaming, displayRenderers }: PartRendererProps) {
+  const { t } = useTranslation();
   switch (part.type) {
     case "text": {
       const p = part as TextPart;
@@ -154,6 +163,46 @@ export const PartRenderer = memo(function PartRenderer({ part, isStreaming, disp
     case "task-card": {
       const p = part as unknown as TaskCardProps;
       return <TaskCard {...p} />;
+    }
+
+    case "status-toast": {
+      const p = part as StatusToastPart;
+      return (
+        <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-2.5 py-1.5 text-xs text-muted-foreground">
+          {p.done ? (
+            <Check className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
+          ) : (
+            <Loader2 className="h-3 w-3 animate-spin shrink-0" />
+          )}
+          <span>{p.status}</span>
+        </div>
+      );
+    }
+
+    case "compact-boundary": {
+      const p = part as CompactBoundaryPart;
+      return (
+        <div className="my-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+          <div className="h-px flex-1 bg-border" />
+          <span>
+            {t("part.compactBoundary")}
+            {typeof p.savedTokens === "number" && p.savedTokens > 0
+              ? ` · ${p.savedTokens.toLocaleString()} tokens`
+              : ""}
+          </span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+      );
+    }
+
+    case "prompt-suggestion": {
+      const p = part as PromptSuggestionPart;
+      return (
+        <div className="flex items-start gap-2 rounded-lg border border-dashed bg-muted/20 px-3 py-2 text-xs">
+          <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <span className="flex-1">{p.suggestion}</span>
+        </div>
+      );
     }
 
     default:

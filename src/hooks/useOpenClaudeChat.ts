@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Message, MessagePart, ToolInvocationPart, TurnMetadata } from "../types.js";
-import { extractTextFromParts } from "../lib/sdk-to-message.js";
+import { extractTextFromParts, convertSDKMessages } from "../lib/sdk-to-message.js";
 import type {
   ContentBlock,
   SDKAssistantMessage,
@@ -8,6 +8,7 @@ import type {
   SDKResultMessage,
   SDKMessage,
 } from "../lib/sdk-to-message.js";
+import { createDefaultTransport, type ChatTransport } from "../transport.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -45,6 +46,18 @@ export interface UseOpenClaudeChatOptions {
    * Default: 600_000 (10 min).
    */
   maxTurnMs?: number;
+  /**
+   * Transport opcional pra carregar historico via `getMessages()`. Se ausente,
+   * o hook deriva de `endpoint` automaticamente. Passar o seu transport e util
+   * quando voce ja mantem um (e.g., compartilhado com `<History>`).
+   */
+  transport?: ChatTransport;
+  /**
+   * Quando `sessionId` e fornecido e `initialMessages` nao, o hook busca o
+   * historico via `transport.getMessages(sessionId)` automaticamente.
+   * Default: `true`. Desligue se voce gerencia o historico no consumer.
+   */
+  autoLoadHistory?: boolean;
 }
 
 export interface UseOpenClaudeChatReturn {
@@ -75,6 +88,8 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     agentId,
     fetcher,
     maxTurnMs = 600_000,
+    transport: customTransport,
+    autoLoadHistory = true,
   } = options;
 
   const [sessionId, setSessionId] = useState<string | null>(providedSessionId ?? null);
@@ -87,6 +102,48 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
   const lastSentRef = useRef<string | null>(null);
 
   const doFetch = fetcher ?? fetch;
+
+  // ──────────────────────────────────────────────────────────────
+  // Auto-load do historico: quando sessionId e fornecido (ou trocado)
+  // e o consumer NAO passou initialMessages, busca via transport.
+  // Se autoLoadHistory=false, o consumer e responsavel.
+  const initialMessagesProvided = initialMessages !== undefined;
+  useEffect(() => {
+    if (!autoLoadHistory) return;
+    if (initialMessagesProvided) return;
+    if (!providedSessionId) return;
+    let cancelled = false;
+    const transport = customTransport ?? createDefaultTransport(endpoint, token);
+    (async () => {
+      try {
+        const result = await transport.getMessages(providedSessionId);
+        if (cancelled) return;
+        // O backbone pode mandar SDKMessages crus (precisa converter) OU
+        // Messages ja convertidas. createDefaultTransport ja converte; um
+        // transport custom pode devolver array vazio ou misto. Tratamos
+        // pelo formato — se tem `parts`, e Message; senao tentamos converter.
+        const items = result.messages as Array<Message | SDKMessage>;
+        const looksLikeChatMessage = (m: unknown): m is Message =>
+          typeof m === "object" && m !== null &&
+          "parts" in (m as Record<string, unknown>) &&
+          "role" in (m as Record<string, unknown>);
+        const allChatMessages = items.every(looksLikeChatMessage);
+        const final: Message[] = allChatMessages
+          ? (items as Message[])
+          : convertSDKMessages(items as SDKMessage[]);
+        setMessages(final);
+      } catch (err) {
+        if (cancelled) return;
+        console.warn("[openclaude-chat] auto-load history failed:", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Deliberadamente NAO depende de customTransport pra nao re-fetchar a
+    // cada render. autoLoadHistory + providedSessionId sao os disparos.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [providedSessionId, autoLoadHistory, initialMessagesProvided, endpoint, token]);
 
   // ──────────────────────────────────────────────────────────────
   // Garante sessao live
@@ -224,12 +281,16 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
           // Signal 1: nova mensagem do assistente chegou — todas as tools
           // anteriores ja terminaram (execucao sequencial). Assenta qualquer
           // tool_use ainda em "call"/"partial-call" para remover o spinner.
+          // Tambem marca status-toasts como `done` (vira ✓ no PartRenderer).
           for (const p of accumulatedParts) {
             if (p.type === "tool-invocation") {
               const tip = p as ToolInvocationPart;
               if (tip.toolInvocation.state === "call" || tip.toolInvocation.state === "partial-call") {
                 tip.toolInvocation = { ...tip.toolInvocation, state: "result", result: null };
               }
+            }
+            if (p.type === "status-toast") {
+              (p as { done?: boolean }).done = true;
             }
           }
 
@@ -472,13 +533,23 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
               }
             }
           } else if (sys.subtype === "status") {
-            // Status messages (e.g., "compacting") — inline toast
+            // Status messages (e.g., "compacting", "Pensando…") —
+            // consolidados num único pill. Se já existe um status-toast
+            // pendente (`!done`), atualiza o texto in-place. Caso contrario,
+            // empurra um novo. Evita stack visual de pills.
             const status = (sys as { status?: string }).status;
             if (status) {
-              accumulatedParts.push({
-                type: "status-toast",
-                status,
-              } as MessagePart);
+              const existing = accumulatedParts.find(
+                (p) => p.type === "status-toast" && !(p as { done?: boolean }).done,
+              ) as { type: string; status: string; done?: boolean } | undefined;
+              if (existing) {
+                existing.status = status;
+              } else {
+                accumulatedParts.push({
+                  type: "status-toast",
+                  status,
+                } as MessagePart);
+              }
               commit();
             }
           } else if (sys.subtype === "compact_boundary") {

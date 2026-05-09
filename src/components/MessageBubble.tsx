@@ -15,6 +15,8 @@ export interface MessageBubbleProps {
   displayRenderers?: DisplayRendererMap;
   /** Show turn metadata footer (duration, cost, tokens, model). Default: true. */
   enableTurnMeta?: boolean;
+  /** Show "..." indicator while streaming. Default: true. */
+  enableStreamingIndicator?: boolean;
   className?: string;
 }
 
@@ -106,7 +108,7 @@ function formatTokens(n: number): string {
   return String(n);
 }
 
-export const MessageBubble = memo(function MessageBubble({ message, isStreaming, displayRenderers, enableTurnMeta = true, className }: MessageBubbleProps) {
+export const MessageBubble = memo(function MessageBubble({ message, isStreaming, displayRenderers, enableTurnMeta = true, enableStreamingIndicator = true, className }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const hasParts = Array.isArray(message.parts) && message.parts.length > 0;
   const hasText = typeof message.content === "string" && message.content.length > 0;
@@ -142,7 +144,7 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
               ? <EmptyResponse />
               : null
         }
-        {isStreaming && !isUser && <StreamingIndicator />}
+        {enableStreamingIndicator && isStreaming && !isUser && <StreamingIndicator />}
       </div>
 
       {/* Action bar + turn footer — outside bubble, below */}
@@ -165,5 +167,6 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
   && prev.isStreaming === next.isStreaming
   && prev.displayRenderers === next.displayRenderers
   && prev.enableTurnMeta === next.enableTurnMeta
+  && prev.enableStreamingIndicator === next.enableStreamingIndicator
   && prev.className === next.className
 );

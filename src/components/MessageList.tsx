@@ -27,6 +27,8 @@ export interface MessageListProps {
   isLoadingMore?: boolean;
   /** Show turn metadata footer (duration, cost, tokens, model). Default: true. */
   enableTurnMeta?: boolean;
+  /** Show "..." indicator while waiting for assistant. Default: true. */
+  enableStreamingIndicator?: boolean;
 }
 
 function LoadingOlder() {
@@ -65,7 +67,7 @@ function DefaultWelcome() {
   );
 }
 
-export function MessageList({ messages, isLoading, displayRenderers, className, error, onRetry, emptyState, hasMore, onLoadMore, isLoadingMore, enableTurnMeta }: MessageListProps) {
+export function MessageList({ messages, isLoading, displayRenderers, className, error, onRetry, emptyState, hasMore, onLoadMore, isLoadingMore, enableTurnMeta, enableStreamingIndicator = true }: MessageListProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const isFollowingRef = useRef(true);
   const loadMoreDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -177,13 +179,14 @@ export function MessageList({ messages, isLoading, displayRenderers, className, 
                     isStreaming={virtualRow.index === lastAssistantIndex && isLoading && messages[messages.length - 1]?.role === "assistant"}
                     displayRenderers={displayRenderers}
                     enableTurnMeta={enableTurnMeta}
+                    enableStreamingIndicator={enableStreamingIndicator}
                   />
                 </div>
               );
             })}
           </div>
         </div>
-        {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
+        {enableStreamingIndicator && isLoading && messages[messages.length - 1]?.role !== "assistant" && (
           <div className="px-4 pb-3">
             <StreamingIndicator />
           </div>

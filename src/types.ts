@@ -23,12 +23,25 @@ export type ToolInvocationPart = {
 export type ImageAttachmentPart = { type: "image"; _ref?: string; mimeType?: string };
 export type FileAttachmentPart = { type: "file"; _ref?: string; mimeType?: string };
 
+/** Inline status pill — usado pra comfort messages durante o turno
+ * (ex: "Pensando…", "Acordando…"). `done=true` muda o ícone pra check. */
+export type StatusToastPart = { type: "status-toast"; status: string; done?: boolean };
+
+/** Divider visual emitido quando o CLI faz compactação automática. */
+export type CompactBoundaryPart = { type: "compact-boundary"; savedTokens?: number };
+
+/** Sugestão de próxima pergunta emitida pelo CLI. */
+export type PromptSuggestionPart = { type: "prompt-suggestion"; suggestion: string };
+
 export type MessagePart =
   | TextPart
   | ReasoningPart
   | ToolInvocationPart
   | ImageAttachmentPart
   | FileAttachmentPart
+  | StatusToastPart
+  | CompactBoundaryPart
+  | PromptSuggestionPart
   | { type: string };
 
 export type MessageRole = "user" | "assistant";

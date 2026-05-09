@@ -36,6 +36,7 @@ export const ptBR: TranslationKeys = {
   // PartRenderer
   "part.collapse": "Recolher",
   "part.expand": "Expandir",
+  "part.compactBoundary": "Conversa compactada",
 
   // PartErrorBoundary
   "partError.default": "Falha ao renderizar bloco",

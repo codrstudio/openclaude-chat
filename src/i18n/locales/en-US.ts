@@ -34,6 +34,7 @@ export const enUS = {
   // PartRenderer
   "part.collapse": "Collapse",
   "part.expand": "Expand",
+  "part.compactBoundary": "Conversation compacted",
 
   // PartErrorBoundary
   "partError.default": "Failed to render block",

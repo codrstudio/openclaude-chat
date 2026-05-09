@@ -11,6 +11,7 @@ import { LocaleProvider, useTranslation, resolveLocale } from "../i18n/index.js"
 import type { CustomMessages, CustomLocaleInfo } from "../i18n/index.js";
 import type { DisplayRendererMap } from "../display/registry.js";
 import type { Message } from "../types.js";
+import type { ChatTransport } from "../transport.js";
 
 // Literal classes so Tailwind's source scanner picks them all up at build time.
 const MAX_WIDTH_CLASS = {
@@ -56,6 +57,13 @@ export interface ChatProps {
   enableLocaleSelect?: boolean;
   /** Mostra rodape de metadados do turno (duracao, custo, tokens, modelo). Default: true. */
   enableTurnMeta?: boolean;
+  /**
+   * Mostra o indicador "..." (3 reticências animadas) enquanto a resposta
+   * ainda não chegou. Default: true. Desligar quando o consumer estiver
+   * usando comfort messages (`status-toast`) emitidas pelo servidor —
+   * a pill já cumpre o papel de feedback de carga.
+   */
+  enableStreamingIndicator?: boolean;
   /** Locale inicial (aceita "pt-BR", "pt_br", "pt", etc). Default: "en-US". */
   locale?: string;
   /** Callback quando o usuario troca o locale via selector. */
@@ -65,6 +73,18 @@ export interface ChatProps {
   /** Metadata for custom locales (shown in locale selector). */
   locales?: CustomLocaleInfo;
   fetcher?: typeof fetch;
+  /**
+   * Transport opcional — usado pra carregar historico via getMessages quando
+   * o consumer nao fornece initialMessages. Sem isto, o hook deriva do
+   * `endpoint`. Util pra reusar o mesmo transport entre `<Chat>` e `<History>`.
+   */
+  transport?: ChatTransport;
+  /**
+   * Quando true (default), `<Chat>` busca o historico automaticamente ao
+   * receber/trocar `sessionId`. Desligar quando o consumer passa
+   * `initialMessages` ou gerencia o historico fora.
+   */
+  autoLoadHistory?: boolean;
   emptyState?: React.ReactNode;
   /**
    * Max-width do conteudo do chat (mensagens + input). O chat se centraliza
@@ -81,6 +101,7 @@ interface ChatContentProps {
   enableAttachments?: boolean;
   enableVoice?: boolean;
   enableTurnMeta?: boolean;
+  enableStreamingIndicator?: boolean;
   emptyState?: React.ReactNode;
   bottomSlot?: React.ReactNode;
 }
@@ -104,7 +125,7 @@ function NoSessionState({ children }: { children?: React.ReactNode }) {
   );
 }
 
-function ChatContent({ displayRenderers, placeholder, enableAttachments = true, enableVoice = true, enableTurnMeta = true, emptyState, bottomSlot }: ChatContentProps) {
+function ChatContent({ displayRenderers, placeholder, enableAttachments = true, enableVoice = true, enableTurnMeta = true, enableStreamingIndicator = true, emptyState, bottomSlot }: ChatContentProps) {
   const { messages, input, setInput, handleSubmit, isLoading, stop, error, reload } = useChatContext();
 
   return (
@@ -117,6 +138,7 @@ function ChatContent({ displayRenderers, placeholder, enableAttachments = true, 
         onRetry={reload}
         emptyState={emptyState}
         enableTurnMeta={enableTurnMeta}
+        enableStreamingIndicator={enableStreamingIndicator}
       />
       <div className="px-4 pb-4">
         <MessageInput
@@ -152,11 +174,14 @@ export function Chat({
   enableModelSelect,
   enableLocaleSelect = true,
   enableTurnMeta = true,
+  enableStreamingIndicator = true,
   locale: localeProp,
   onLocaleChange,
   messages: messagesProp,
   locales: localesProp,
   fetcher,
+  transport,
+  autoLoadHistory = true,
   emptyState,
   maxWidth = "3xl",
 }: ChatProps) {
@@ -242,6 +267,8 @@ export function Chat({
         turnOptions={turnOptions}
         model={effectiveModel}
         fetcher={fetcher}
+        transport={transport}
+        autoLoadHistory={autoLoadHistory}
       >
         <div className={outerClass}>
           <div className={innerClass}>
@@ -251,6 +278,7 @@ export function Chat({
               enableAttachments={enableAttachments}
               enableVoice={enableVoice}
               enableTurnMeta={enableTurnMeta}
+              enableStreamingIndicator={enableStreamingIndicator}
               emptyState={emptyState}
               bottomSlot={bottomSlot}
             />
