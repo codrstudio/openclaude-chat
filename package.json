@@ -1,15 +1,30 @@
 {
   "name": "@codrstudio/openclaude-chat",
-  "version": "0.5.1",
-  "description": "Rich chat UI component — distributed as a shadcn registry (source-copy). HTTP+SSE counterpart to @codrstudio/openclaude-sdk.",
+  "version": "0.6.1",
+  "description": "Rich chat UI component — dual distribution: shadcn registry (source-copy) + npm tarball (ESM bundle). HTTP+SSE counterpart to @codrstudio/openclaude-sdk.",
   "private": true,
   "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./src/styles.css",
+    "./registry/*": "./registry/*",
+    "./package.json": "./package.json"
+  },
   "files": [
+    "dist",
     "src",
     "registry",
     "README.md"
   ],
   "scripts": {
+    "build": "tsup",
     "typecheck": "tsc --noEmit",
     "registry:source": "node scripts/build-registry.mjs",
     "registry:build": "npm run registry:source && npx shadcn@latest build --output ./registry"
@@ -47,7 +62,9 @@
   "devDependencies": {
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "esbuild": "^0.28.0",
     "tailwindcss": "^4",
+    "tsup": "^8.5.1",
     "typescript": "^5"
   },
   "license": "MIT",
