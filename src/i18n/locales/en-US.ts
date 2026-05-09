@@ -36,6 +36,20 @@ export const enUS = {
   "part.expand": "Expand",
   "part.compactBoundary": "Conversation compacted",
 
+  // Artifacts
+  "artifact.error.title": "Couldn't render this artifact.",
+  "artifact.error.transpile": "Compile error",
+  "artifact.error.runtime": "Runtime error",
+  "artifact.error.blocked": "Construct blocked",
+  "artifact.action.copy": "Copy",
+  "artifact.action.copied": "Copied!",
+  "artifact.action.download": "Download",
+  "artifact.action.openSource": "View source",
+  "artifact.action.openPreview": "View preview",
+  "artifact.action.openInNewTab": "Open in new tab",
+  "artifact.loading": "Loading…",
+  "artifact.unsupported": "Unsupported artifact type",
+
   // AskUserQuestion
   "askUser.title": "Waiting for your answer",
   "askUser.submit": "Submit",

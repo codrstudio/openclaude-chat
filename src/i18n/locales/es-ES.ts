@@ -38,6 +38,20 @@ export const esES: TranslationKeys = {
   "part.expand": "Expandir",
   "part.compactBoundary": "Conversación compactada",
 
+  // Artifacts
+  "artifact.error.title": "No se pudo renderizar este artefacto.",
+  "artifact.error.transpile": "Error al compilar",
+  "artifact.error.runtime": "Error en ejecución",
+  "artifact.error.blocked": "Construcción bloqueada",
+  "artifact.action.copy": "Copiar",
+  "artifact.action.copied": "¡Copiado!",
+  "artifact.action.download": "Descargar",
+  "artifact.action.openSource": "Ver código",
+  "artifact.action.openPreview": "Ver vista previa",
+  "artifact.action.openInNewTab": "Abrir en pestaña nueva",
+  "artifact.loading": "Cargando…",
+  "artifact.unsupported": "Tipo de artefacto no soportado",
+
   // AskUserQuestion
   "askUser.title": "Esperando tu respuesta",
   "askUser.submit": "Responder",

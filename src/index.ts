@@ -56,31 +56,6 @@ export type { ToolResultProps } from "./parts/ToolResult.js";
 export { TaskCard } from "./parts/TaskCard.js";
 export type { TaskCardProps, TaskStatus } from "./parts/TaskCard.js";
 
-// Display renderers
-export { AlertRenderer } from "./display/AlertRenderer.js";
-export { MetricCardRenderer } from "./display/MetricCardRenderer.js";
-export { PriceHighlightRenderer } from "./display/PriceHighlightRenderer.js";
-export { FileCardRenderer } from "./display/FileCardRenderer.js";
-export { CodeBlockRenderer } from "./display/CodeBlockRenderer.js";
-export { SourcesListRenderer } from "./display/SourcesListRenderer.js";
-export { StepTimelineRenderer } from "./display/StepTimelineRenderer.js";
-export { ProgressStepsRenderer } from "./display/ProgressStepsRenderer.js";
-export { ChartRenderer } from "./display/ChartRenderer.js";
-export { CarouselRenderer } from "./display/CarouselRenderer.js";
-export { ProductCardRenderer } from "./display/ProductCardRenderer.js";
-export { ComparisonTableRenderer } from "./display/ComparisonTableRenderer.js";
-export { DataTableRenderer } from "./display/DataTableRenderer.js";
-export { SpreadsheetRenderer } from "./display/SpreadsheetRenderer.js";
-export { GalleryRenderer } from "./display/GalleryRenderer.js";
-export { ImageViewerRenderer } from "./display/ImageViewerRenderer.js";
-export { LinkPreviewRenderer } from "./display/LinkPreviewRenderer.js";
-export { MapViewRenderer } from "./display/MapViewRenderer.js";
-export { ChoiceButtonsRenderer } from "./display/ChoiceButtonsRenderer.js";
-
-// Registry
-export { defaultDisplayRenderers, resolveDisplayRenderer } from "./display/registry.js";
-export type { DisplayRendererMap, DisplayActionName } from "./display/registry.js";
-
 // History
 export { History } from "./components/History.js";
 export type { HistoryProps } from "./components/History.js";
@@ -146,3 +121,13 @@ export type { HistoryTriggerProps } from "./components/HistoryTrigger.js";
 
 // useIsMobile helper reuse
 export { useIsMobile } from "./hooks/useIsMobile.js";
+
+// Artifacts (rich output via <antArtifact> tag)
+export { AppHost } from "./artifacts/AppHost.js";
+export type { AppHostProps } from "./artifacts/AppHost.js";
+export { compile, validate, CompileError } from "./artifacts/compile.js";
+export type { CompileResult } from "./artifacts/compile.js";
+export { buildScope } from "./artifacts/runtime.js";
+export type { AppActions, BuildScopeOptions } from "./artifacts/runtime.js";
+export type { ArtifactPart, ArtifactType } from "./types.js";
+export { ArtifactCard } from "./parts/artifacts/ArtifactCard.js";

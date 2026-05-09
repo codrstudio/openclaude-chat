@@ -36,6 +36,21 @@
       ],
       "files": [
         {
+          "path": "src/artifacts/AppHost.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/artifacts/AppHost.tsx"
+        },
+        {
+          "path": "src/artifacts/compile.ts",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/artifacts/compile.ts"
+        },
+        {
+          "path": "src/artifacts/runtime.ts",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/artifacts/runtime.ts"
+        },
+        {
           "path": "src/components/Chat.tsx",
           "type": "registry:file",
           "target": "~/src/components/openclaude-chat/components/Chat.tsx"
@@ -176,126 +191,6 @@
           "target": "~/src/components/openclaude-chat/components/history/useHistoryData.ts"
         },
         {
-          "path": "src/display/AlertRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/AlertRenderer.tsx"
-        },
-        {
-          "path": "src/display/CarouselRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/CarouselRenderer.tsx"
-        },
-        {
-          "path": "src/display/ChartRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/ChartRenderer.tsx"
-        },
-        {
-          "path": "src/display/ChoiceButtonsRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/ChoiceButtonsRenderer.tsx"
-        },
-        {
-          "path": "src/display/CodeBlockRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/CodeBlockRenderer.tsx"
-        },
-        {
-          "path": "src/display/ComparisonTableRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/ComparisonTableRenderer.tsx"
-        },
-        {
-          "path": "src/display/DataTableRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/DataTableRenderer.tsx"
-        },
-        {
-          "path": "src/display/DisplayReactRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/DisplayReactRenderer.tsx"
-        },
-        {
-          "path": "src/display/FileCardRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/FileCardRenderer.tsx"
-        },
-        {
-          "path": "src/display/GalleryRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/GalleryRenderer.tsx"
-        },
-        {
-          "path": "src/display/ImageViewerRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/ImageViewerRenderer.tsx"
-        },
-        {
-          "path": "src/display/LinkPreviewRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/LinkPreviewRenderer.tsx"
-        },
-        {
-          "path": "src/display/MapViewRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/MapViewRenderer.tsx"
-        },
-        {
-          "path": "src/display/MetricCardRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/MetricCardRenderer.tsx"
-        },
-        {
-          "path": "src/display/PriceHighlightRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/PriceHighlightRenderer.tsx"
-        },
-        {
-          "path": "src/display/ProductCardRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/ProductCardRenderer.tsx"
-        },
-        {
-          "path": "src/display/ProgressStepsRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/ProgressStepsRenderer.tsx"
-        },
-        {
-          "path": "src/display/SourcesListRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/SourcesListRenderer.tsx"
-        },
-        {
-          "path": "src/display/SpreadsheetRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/SpreadsheetRenderer.tsx"
-        },
-        {
-          "path": "src/display/StepTimelineRenderer.tsx",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/StepTimelineRenderer.tsx"
-        },
-        {
-          "path": "src/display/index.ts",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/index.ts"
-        },
-        {
-          "path": "src/display/react-sandbox/bootstrap.ts",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/react-sandbox/bootstrap.ts"
-        },
-        {
-          "path": "src/display/registry.ts",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/registry.ts"
-        },
-        {
-          "path": "src/display/sdk-types.ts",
-          "type": "registry:file",
-          "target": "~/src/components/openclaude-chat/display/sdk-types.ts"
-        },
-        {
           "path": "src/hooks/ChatProvider.tsx",
           "type": "registry:file",
           "target": "~/src/components/openclaude-chat/hooks/ChatProvider.tsx"
@@ -404,6 +299,11 @@
           "path": "src/parts/ToolResult.tsx",
           "type": "registry:file",
           "target": "~/src/components/openclaude-chat/parts/ToolResult.tsx"
+        },
+        {
+          "path": "src/parts/artifacts/ArtifactCard.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/openclaude-chat/parts/artifacts/ArtifactCard.tsx"
         },
         {
           "path": "src/styles.css",

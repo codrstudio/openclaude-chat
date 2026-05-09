@@ -9,7 +9,6 @@ import { LocaleSelect } from "./LocaleSelect.js";
 import { useModels } from "../hooks/useModels.js";
 import { LocaleProvider, useTranslation, resolveLocale } from "../i18n/index.js";
 import type { CustomMessages, CustomLocaleInfo } from "../i18n/index.js";
-import type { DisplayRendererMap } from "../display/registry.js";
 import type { Message } from "../types.js";
 import type { ChatTransport } from "../transport.js";
 
@@ -45,7 +44,6 @@ export interface ChatProps {
   initialMessages?: Message[];
   sessionOptions?: Record<string, unknown>;
   turnOptions?: Record<string, unknown>;
-  displayRenderers?: DisplayRendererMap;
   placeholder?: string;
   footer?: React.ReactNode;
   className?: string;
@@ -97,6 +95,13 @@ export interface ChatProps {
    * onboarding sem interação) deixam desligado.
    */
   enableAskUserQuestion?: boolean;
+  /**
+   * Artifacts — habilita parsing de tags `<antArtifact>` no texto do agente
+   * e rendering em cards dedicados (code, markdown, html, svg, mermaid,
+   * react). Declara `clientCapabilities.artifacts: true` no POST /conversations.
+   * Default: false.
+   */
+  enableArtifacts?: boolean;
   emptyState?: React.ReactNode;
   /**
    * Max-width do conteudo do chat (mensagens + input). O chat se centraliza
@@ -108,7 +113,6 @@ export interface ChatProps {
 }
 
 interface ChatContentProps {
-  displayRenderers?: DisplayRendererMap;
   placeholder?: string;
   enableAttachments?: boolean;
   enableVoice?: boolean;
@@ -137,7 +141,7 @@ function NoSessionState({ children }: { children?: React.ReactNode }) {
   );
 }
 
-function ChatContent({ displayRenderers, placeholder, enableAttachments = true, enableVoice = true, enableTurnMeta = true, enableStreamingIndicator = true, emptyState, bottomSlot }: ChatContentProps) {
+function ChatContent({ placeholder, enableAttachments = true, enableVoice = true, enableTurnMeta = true, enableStreamingIndicator = true, emptyState, bottomSlot }: ChatContentProps) {
   const { messages, input, setInput, handleSubmit, isLoading, stop, error, reload } = useChatContext();
 
   return (
@@ -145,7 +149,6 @@ function ChatContent({ displayRenderers, placeholder, enableAttachments = true, 
       <MessageList
         messages={messages}
         isLoading={isLoading}
-        displayRenderers={displayRenderers}
         error={error ?? undefined}
         onRetry={reload}
         emptyState={emptyState}
@@ -177,7 +180,6 @@ export function Chat({
   initialMessages,
   sessionOptions,
   turnOptions,
-  displayRenderers,
   placeholder,
   footer,
   className,
@@ -195,6 +197,7 @@ export function Chat({
   transport,
   autoLoadHistory = true,
   enableAskUserQuestion = false,
+  enableArtifacts = false,
   emptyState,
   maxWidth = "3xl",
 }: ChatProps) {
@@ -283,11 +286,11 @@ export function Chat({
         transport={transport}
         autoLoadHistory={autoLoadHistory}
         clientCapabilities={enableAskUserQuestion ? { askUserQuestion: true } : undefined}
+        enableArtifacts={enableArtifacts}
       >
         <div className={outerClass}>
           <div className={innerClass}>
             <ChatContent
-              displayRenderers={displayRenderers}
               placeholder={placeholder}
               enableAttachments={enableAttachments}
               enableVoice={enableVoice}

@@ -6,7 +6,6 @@ import type { Message } from "../types.js";
 import { MessageBubble } from "./MessageBubble.js";
 import { StreamingIndicator } from "./StreamingIndicator.js";
 import { ErrorNote } from "./ErrorNote.js";
-import type { DisplayRendererMap } from "../display/registry.js";
 import { ScrollBar } from "../ui/scroll-area.js";
 import { cn } from "../lib/utils.js";
 import { useTranslation } from "../i18n/index.js";
@@ -14,7 +13,6 @@ import { useTranslation } from "../i18n/index.js";
 export interface MessageListProps {
   messages: Message[];
   isLoading?: boolean;
-  displayRenderers?: DisplayRendererMap;
   className?: string;
   error?: Error;
   onRetry?: () => void;
@@ -67,7 +65,7 @@ function DefaultWelcome() {
   );
 }
 
-export function MessageList({ messages, isLoading, displayRenderers, className, error, onRetry, emptyState, hasMore, onLoadMore, isLoadingMore, enableTurnMeta, enableStreamingIndicator = true }: MessageListProps) {
+export function MessageList({ messages, isLoading, className, error, onRetry, emptyState, hasMore, onLoadMore, isLoadingMore, enableTurnMeta, enableStreamingIndicator = true }: MessageListProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const isFollowingRef = useRef(true);
   const loadMoreDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -177,7 +175,6 @@ export function MessageList({ messages, isLoading, displayRenderers, className, 
                   <MessageBubble
                     message={message}
                     isStreaming={virtualRow.index === lastAssistantIndex && isLoading && messages[messages.length - 1]?.role === "assistant"}
-                    displayRenderers={displayRenderers}
                     enableTurnMeta={enableTurnMeta}
                     enableStreamingIndicator={enableStreamingIndicator}
                   />

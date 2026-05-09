@@ -67,6 +67,30 @@ export type AskUserQuestionPart = {
   error?: string;
 };
 
+/** Tipos de artifact reconhecidos. Espelha os MIME types do skill body. */
+export type ArtifactType =
+  | "application/vnd.ant.code"
+  | "text/markdown"
+  | "text/html"
+  | "image/svg+xml"
+  | "application/vnd.ant.mermaid"
+  | "application/vnd.ant.react";
+
+/** Artifact emitido pelo agente via tag <antArtifact>. */
+export interface ArtifactPart {
+  type: "artifact";
+  /** Identificador estável (kebab-case). Mesmo id em turno seguinte = update. */
+  identifier: string;
+  /** MIME-like discriminator. */
+  artifactType: ArtifactType;
+  /** Label humano (1-6 palavras). */
+  title: string;
+  /** Linguagem (presente quando artifactType === application/vnd.ant.code). */
+  language?: string;
+  /** Payload bruto (TSX, markdown, HTML, SVG, mermaid src, etc). */
+  source: string;
+}
+
 export type MessagePart =
   | TextPart
   | ReasoningPart
@@ -77,6 +101,7 @@ export type MessagePart =
   | CompactBoundaryPart
   | PromptSuggestionPart
   | AskUserQuestionPart
+  | ArtifactPart
   | { type: string };
 
 export type MessageRole = "user" | "assistant";

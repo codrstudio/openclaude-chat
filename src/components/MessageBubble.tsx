@@ -5,14 +5,12 @@ import { Markdown } from "./Markdown.js";
 import { StreamingIndicator } from "./StreamingIndicator.js";
 import { PartRenderer } from "../parts/PartRenderer.js";
 import { PartErrorBoundary } from "../parts/PartErrorBoundary.js";
-import type { DisplayRendererMap } from "../display/registry.js";
 import { Copy, Check, Clock, Coins, Cpu } from "lucide-react";
 import { useTranslation } from "../i18n/index.js";
 
 export interface MessageBubbleProps {
   message: Message;
   isStreaming?: boolean;
-  displayRenderers?: DisplayRendererMap;
   /** Show turn metadata footer (duration, cost, tokens, model). Default: true. */
   enableTurnMeta?: boolean;
   /** Show "..." indicator while streaming. Default: true. */
@@ -108,7 +106,7 @@ function formatTokens(n: number): string {
   return String(n);
 }
 
-export const MessageBubble = memo(function MessageBubble({ message, isStreaming, displayRenderers, enableTurnMeta = true, enableStreamingIndicator = true, className }: MessageBubbleProps) {
+export const MessageBubble = memo(function MessageBubble({ message, isStreaming, enableTurnMeta = true, enableStreamingIndicator = true, className }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const hasParts = Array.isArray(message.parts) && message.parts.length > 0;
   const hasText = typeof message.content === "string" && message.content.length > 0;
@@ -133,7 +131,6 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
                   <PartRenderer
                     part={part as Parameters<typeof PartRenderer>[0]["part"]}
                     isStreaming={isStreaming}
-                    displayRenderers={displayRenderers}
                   />
                 </PartErrorBoundary>
               ))}
@@ -165,7 +162,6 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming,
   prev.message === next.message
   && prev.message.turnMeta === next.message.turnMeta
   && prev.isStreaming === next.isStreaming
-  && prev.displayRenderers === next.displayRenderers
   && prev.enableTurnMeta === next.enableTurnMeta
   && prev.enableStreamingIndicator === next.enableStreamingIndicator
   && prev.className === next.className

@@ -63,7 +63,13 @@ export interface UseOpenClaudeChatOptions {
    * O servidor pode usar isso pra ligar/desligar features no SDK conforme
    * o que a UI suporta. Hoje suportado: `askUserQuestion`.
    */
-  clientCapabilities?: { askUserQuestion?: boolean };
+  clientCapabilities?: { askUserQuestion?: boolean; artifacts?: boolean };
+  /**
+   * Habilita Artifacts — declara `clientCapabilities.artifacts: true` no
+   * POST /conversations e ativa o parser de tags `<antArtifact>` no texto.
+   * Default: false.
+   */
+  enableArtifacts?: boolean;
 }
 
 export interface UseOpenClaudeChatReturn {
@@ -104,6 +110,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     transport: customTransport,
     autoLoadHistory = true,
     clientCapabilities,
+    enableArtifacts = false,
   } = options;
 
   const [sessionId, setSessionId] = useState<string | null>(providedSessionId ?? null);
@@ -172,7 +179,14 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
         options: sessionOptions ?? {},
         ...(model ? { model } : {}),
         ...(agentId ? { agentId } : {}),
-        ...(clientCapabilities ? { clientCapabilities } : {}),
+        ...(clientCapabilities || enableArtifacts
+          ? {
+              clientCapabilities: {
+                ...(clientCapabilities ?? {}),
+                ...(enableArtifacts ? { artifacts: true } : {}),
+              },
+            }
+          : {}),
       }),
     });
     if (!res.ok) {
@@ -181,7 +195,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
     const data = (await res.json()) as { sessionId: string };
     setSessionId(data.sessionId);
     return data.sessionId;
-  }, [sessionId, endpoint, token, sessionOptions, model, agentId, clientCapabilities, doFetch]);
+  }, [sessionId, endpoint, token, sessionOptions, model, agentId, clientCapabilities, enableArtifacts, doFetch]);
 
   // ──────────────────────────────────────────────────────────────
   // Stream parser — consome SSE do endpoint /conversations/:id/messages

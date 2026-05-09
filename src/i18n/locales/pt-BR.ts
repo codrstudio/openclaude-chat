@@ -38,6 +38,20 @@ export const ptBR: TranslationKeys = {
   "part.expand": "Expandir",
   "part.compactBoundary": "Conversa compactada",
 
+  // Artifacts
+  "artifact.error.title": "Não foi possível renderizar este artefato.",
+  "artifact.error.transpile": "Erro ao compilar",
+  "artifact.error.runtime": "Erro em tempo de execução",
+  "artifact.error.blocked": "Construção bloqueada",
+  "artifact.action.copy": "Copiar",
+  "artifact.action.copied": "Copiado!",
+  "artifact.action.download": "Baixar",
+  "artifact.action.openSource": "Ver código",
+  "artifact.action.openPreview": "Ver renderizado",
+  "artifact.action.openInNewTab": "Abrir em nova aba",
+  "artifact.loading": "Carregando…",
+  "artifact.unsupported": "Tipo de artefato não suportado",
+
   // AskUserQuestion
   "askUser.title": "Aguardando sua resposta",
   "askUser.submit": "Responder",
