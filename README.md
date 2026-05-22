@@ -182,6 +182,32 @@ function ChatPage() {
 }
 ```
 
+## Styling recipe
+
+Tema claro/escuro funcional, mesma identidade visual do app host, e suporte
+a Module Federation: ver [`skills/openclaude-chat-styling/SKILL.md`](./skills/openclaude-chat-styling/SKILL.md).
+
+A skill cobre as três armadilhas mais comuns ao integrar o `<Chat>` em um
+host real:
+
+1. **`@theme { --color-X: var(--X) }` congela o valor no `:root`** —
+   resolução do `var()` acontece no `:root`, ignora `body.light`. Trocar
+   por **`@theme inline`** faz Tailwind expandir a indireção no ponto de
+   uso (lazy lookup, respeita cascade).
+2. **Tokens duplicados em pacotes filhos sobrescrevem o host** — em
+   monorepos / micro-frontends, manter `:root { --background: ... }`
+   apenas no host. Pacotes filhos só fazem o mapping `@theme inline`.
+3. **`@originjs/vite-plugin-federation` não carrega o CSS do remote** —
+   o host recebe só o JS exposed. Configurar `cssCodeSplit: false` +
+   `assetFileNames` no remote (nome estável `assets/styles.css`) e
+   injetar `<link rel="stylesheet">` no host antes de montar o componente
+   federado.
+
+A skill é distribuída como [Anthropic Skill](https://docs.anthropic.com/en/docs/agents-and-tools/agent-skills/overview)
+— copie `skills/openclaude-chat-styling/` para `~/.claude/skills/` (ou
+para o `.claude/skills/` do seu projeto) e o Claude Code aplica
+automaticamente o pattern quando você integrar o `<Chat>`.
+
 ## Compatibilidade
 
 - React 18 ou 19
