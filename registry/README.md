@@ -1,11 +1,11 @@
-# @codrstudio/openclaude-chat — Registry
+# @codrstudio/hammer-chat — Registry
 
 Distribuição shadcn-style (source copy) da triad Chat + History + ChatHeader
 mais seus envelopes responsivos.
 
 ## Conteúdo
 
-- `openclaude-chat.json` — manifest com todos os arquivos inlined (~360KB, 95 arquivos)
+- `hammer-chat.json` — manifest com todos os arquivos inlined (~360KB, 95 arquivos)
 - `install.mjs` — installer fallback que bypassa a CLI oficial do shadcn
 - `README.md` — este arquivo
 
@@ -18,17 +18,17 @@ Você tem **2 caminhos**. Escolhe o que funciona pro teu projeto.
 Funciona quando teu `components.json` segue o schema padrão do shadcn.
 
 ```bash
-npx shadcn@latest add ./path/to/openclaude-chat.json --overwrite --yes
+npx shadcn@latest add ./path/to/hammer-chat.json --overwrite --yes
 ```
 
 ou, se você copiou o JSON pro teu repo:
 
 ```bash
-npx shadcn@latest add ./vendor/openclaude-chat.json --overwrite --yes
+npx shadcn@latest add ./vendor/hammer-chat.json --overwrite --yes
 ```
 
 A CLI:
-- Copia os 95 arquivos para `src/components/openclaude-chat/`
+- Copia os 95 arquivos para `src/components/hammer-chat/`
 - Atualiza teu `package.json` com as deps npm
 - Respeita teus aliases de `components.json`
 
@@ -39,7 +39,7 @@ A CLI do shadcn rejeita `components.json` com campos custom (ex: `style: "radix-
 `Invalid configuration found in components.json`, use o installer fallback:
 
 ```bash
-# instala em ./src/components/openclaude-chat
+# instala em ./src/components/hammer-chat
 node ./path/to/install.mjs
 
 # base custom (ex: monorepo com apps/)
@@ -65,12 +65,12 @@ npm install react-markdown remark-gfm rehype-highlight @tanstack/react-virtual l
 
 ## O que é instalado
 
-Tudo sob `src/components/openclaude-chat/` (ou o `--target-base` que você passou).
+Tudo sob `src/components/hammer-chat/` (ou o `--target-base` que você passou).
 
 Estrutura:
 
 ```
-src/components/openclaude-chat/
+src/components/hammer-chat/
 ├── index.ts                    # barrel — importe daqui
 ├── types.ts
 ├── transport.ts
@@ -94,7 +94,7 @@ import {
   ChatActionsResponsive,
   HistoryNewButton,
   createDefaultTransport,
-} from "@/components/openclaude-chat"
+} from "@/components/hammer-chat"
 
 const transport = createDefaultTransport("/api/v1/ai", API_KEY)
 
@@ -194,11 +194,11 @@ function ChatPage() {
 
 ## Atualização
 
-Quando o registry for atualizado (novo `openclaude-chat.json`), basta rodar
-de novo o comando de instalação. Os arquivos em `src/components/openclaude-chat/`
+Quando o registry for atualizado (novo `hammer-chat.json`), basta rodar
+de novo o comando de instalação. Os arquivos em `src/components/hammer-chat/`
 serão sobrescritos.
 
-**Não edite os arquivos em `src/components/openclaude-chat/` — suas
+**Não edite os arquivos em `src/components/hammer-chat/` — suas
 modificações serão perdidas no próximo update.** Toda customização deve
 acontecer via props dos componentes.
 

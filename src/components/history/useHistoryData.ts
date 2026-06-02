@@ -55,8 +55,8 @@ function groupConversations(items: Conversation[], t: (key: keyof TranslationKey
 
 // ── localStorage transport (mock para demo) ──────────────────────────────
 
-const STORAGE_KEY = "openclaude-history"
-const MESSAGES_KEY_PREFIX = "openclaude-messages-"
+const STORAGE_KEY = "hammer-history"
+const MESSAGES_KEY_PREFIX = "hammer-messages-"
 
 function readStorage(): Conversation[] {
   try {
@@ -68,7 +68,7 @@ function readStorage(): Conversation[] {
 }
 
 /** Event name dispatched on window whenever localStorage history changes. */
-const HISTORY_CHANGE_EVENT = "openclaude-history-change"
+const HISTORY_CHANGE_EVENT = "hammer-history-change"
 
 function writeStorage(items: Conversation[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items))

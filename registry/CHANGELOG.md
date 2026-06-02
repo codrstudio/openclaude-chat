@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `@codrstudio/openclaude-chat` are documented here.
+All notable changes to `@codrstudio/hammer-chat` are documented here.
 This file tracks diffs relevant to **consumers migrating between versions**,
 especially from the npm tgz delivery to the shadcn registry delivery.
 
@@ -42,10 +42,10 @@ Playwright + backbone real + api-key scoped a `system.nic`:
 ### Fixed
 
 - **HTTP 403 `forbidden` em api-keys agent-scoped quando `<Chat>` criava
-  sessão sem `sessionId` inicial.** `useOpenClaudeChat.ensureSession` fazia
+  sessão sem `sessionId` inicial.** `useHammerChat.ensureSession` fazia
   `POST /conversations` sem `agentId` no body, o backbone defaultava pra
   `system.main`, e keys que só autorizavam agentes específicos eram negadas.
-  Nova prop `agentId?: string` em `<Chat>` e em `UseOpenClaudeChatOptions`.
+  Nova prop `agentId?: string` em `<Chat>` e em `UseHammerChatOptions`.
 - **Documentação de pitfall**: adicionado no README — para api-keys
   agent-scoped, o `agentId` precisa ser passado nas DUAS pontas:
   `<Chat agentId=...>` (cobre ensureSession) e `<HistoryProvider agentId=...>`
@@ -54,7 +54,7 @@ Playwright + backbone real + api-key scoped a `system.nic`:
 ## 0.5.0 — 2026-04-18
 
 First release of the registry distribution. Shadcn-style source copy under
-`src/components/openclaude-chat/` in the consumer's repo, instead of the
+`src/components/hammer-chat/` in the consumer's repo, instead of the
 opaque npm tgz.
 
 ### Added
@@ -136,7 +136,7 @@ No changes to public API surface of these items — safe across upgrade:
   MapViewRenderer, ChoiceButtonsRenderer)
 - Parts: `<PartRenderer>`, `<ReasoningBlock>`, `<ToolActivity>`,
   `<ToolResult>`, `<TaskCard>`
-- Hooks: `useOpenClaudeChat`, `useChatContext`, `useModels`,
+- Hooks: `useHammerChat`, `useChatContext`, `useModels`,
   `useHistoryContext`, `useIsMobile`
 - Types: `Message`, `MessagePart`, `TextPart`, `ReasoningPart`,
   `ToolInvocationPart`, `Conversation`, `ConversationGroup`
@@ -146,13 +146,13 @@ No changes to public API surface of these items — safe across upgrade:
 
 ## Migration guide: tgz → registry
 
-If you were using the npm package `@codrstudio/openclaude-chat` and are
+If you were using the npm package `@codrstudio/hammer-chat` and are
 moving to the registry:
 
 ### 1. Install
 
 ```bash
-npx shadcn@latest add ./path/to/openclaude-chat.json --overwrite --yes
+npx shadcn@latest add ./path/to/hammer-chat.json --overwrite --yes
 # or, if your components.json is extended (custom style/icon library):
 node ./path/to/install.mjs --target-base=./
 ```
@@ -160,8 +160,8 @@ node ./path/to/install.mjs --target-base=./
 ### 2. Update imports
 
 ```diff
-- import { Chat, History, ChatHeader } from "@codrstudio/openclaude-chat"
-+ import { Chat, History, ChatHeader } from "@/components/openclaude-chat"
+- import { Chat, History, ChatHeader } from "@codrstudio/hammer-chat"
++ import { Chat, History, ChatHeader } from "@/components/hammer-chat"
 ```
 
 ### 3. Handle breaking changes
@@ -186,12 +186,12 @@ node ./path/to/install.mjs --target-base=./
 ### 4. Remove old dep
 
 ```bash
-npm uninstall @codrstudio/openclaude-chat
+npm uninstall @codrstudio/hammer-chat
 ```
 
 ### 5. Coexistence (optional, staged migration)
 
-The registry-installed files live at `@/components/openclaude-chat` — a
-different namespace from the tgz's `@codrstudio/openclaude-chat`. Both can
+The registry-installed files live at `@/components/hammer-chat` — a
+different namespace from the tgz's `@codrstudio/hammer-chat`. Both can
 coexist during migration. Typical pattern: new pages/routes consume the
 registry version, legacy pages stay on tgz until ready to migrate.

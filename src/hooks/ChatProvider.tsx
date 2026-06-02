@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { useOpenClaudeChat, type UseOpenClaudeChatOptions } from "./useOpenClaudeChat.js";
+import { useHammerChat, type UseHammerChatOptions } from "./useHammerChat.js";
 import { parseArtifacts } from "../artifacts/parser.js";
 import type { TextPart, MessagePart } from "../types.js";
 
-type ChatHookValue = ReturnType<typeof useOpenClaudeChat>;
+type ChatHookValue = ReturnType<typeof useHammerChat>;
 
 interface ChatContextValue extends ChatHookValue {
   /**
@@ -17,12 +17,12 @@ interface ChatContextValue extends ChatHookValue {
 
 const ChatContext = createContext<ChatContextValue | null>(null);
 
-export interface ChatProviderProps extends UseOpenClaudeChatOptions {
+export interface ChatProviderProps extends UseHammerChatOptions {
   children: React.ReactNode;
 }
 
 export function ChatProvider({ children, ...options }: ChatProviderProps) {
-  const chat = useOpenClaudeChat(options);
+  const chat = useHammerChat(options);
 
   const artifactLatestAddress = useMemo(() => {
     const map = new Map<string, string>();

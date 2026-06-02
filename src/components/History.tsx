@@ -102,7 +102,7 @@ function HistoryContent({
     if (customTransport) {
       if (endpoint) {
         console.warn(
-          "[openclaude-chat] History: both `transport` and `endpoint` were provided. " +
+          "[hammer-chat] History: both `transport` and `endpoint` were provided. " +
           "`endpoint` and `token` are ignored when `transport` is set.",
         )
       }

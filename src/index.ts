@@ -1,4 +1,4 @@
-// @codrstudio/openclaude-chat — barrel
+// @codrstudio/hammer-chat — barrel
 
 // Tipos publicos
 export type {
@@ -17,11 +17,11 @@ export { Chat } from "./components/Chat.js";
 export type { ChatProps, ChatMaxWidth } from "./components/Chat.js";
 
 // Hook + Provider
-export { useOpenClaudeChat } from "./hooks/useOpenClaudeChat.js";
+export { useHammerChat } from "./hooks/useHammerChat.js";
 export type {
-  UseOpenClaudeChatOptions,
-  UseOpenClaudeChatReturn,
-} from "./hooks/useOpenClaudeChat.js";
+  UseHammerChatOptions,
+  UseHammerChatReturn,
+} from "./hooks/useHammerChat.js";
 
 export { ChatProvider, useChatContext } from "./hooks/ChatProvider.js";
 export type { ChatProviderProps } from "./hooks/ChatProvider.js";
@@ -121,6 +121,23 @@ export type { HistoryTriggerProps } from "./components/HistoryTrigger.js";
 
 // useIsMobile helper reuse
 export { useIsMobile } from "./hooks/useIsMobile.js";
+
+// Multi-provider auth UI (backend-agnostic, callback-driven, catalog-driven)
+export { AuthConfig } from "./components/AuthConfig.js";
+export type {
+  AuthConfigProps,
+  AuthConfigStatus,
+  OAuthMode,
+  OllamaProbeResult,
+} from "./components/AuthConfig.js";
+
+// Anthropic account auth UI — back-compat wrapper sobre AuthConfig
+export { AnthropicAuthConfig } from "./components/AnthropicAuthConfig.js";
+export type {
+  AnthropicAuthConfigProps,
+  AnthropicAuthLabels,
+  AuthStatus,
+} from "./components/AnthropicAuthConfig.js";
 
 // Artifacts (rich output via <antArtifact> tag)
 export { AppHost } from "./artifacts/AppHost.js";

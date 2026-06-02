@@ -29,7 +29,7 @@ const MAX_WIDTH_CLASS = {
 export type ChatMaxWidth = keyof typeof MAX_WIDTH_CLASS | false;
 
 export interface ChatProps {
-  /** Base URL do servico openclaude (ex: http://localhost:9500/api/v1/ai). */
+  /** Base URL do servico hammer (ex: http://localhost:9500/api/v1/ai). */
   endpoint: string;
   token?: string;
   /** Sessao live existente. Se omitida, o hook cria uma via POST /conversations. */

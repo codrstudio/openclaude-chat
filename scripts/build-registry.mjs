@@ -1,5 +1,5 @@
 // Gera registry.json na raiz do repo, listando todos os arquivos de src/
-// como entradas registry:file com target sob components/openclaude-chat/.
+// como entradas registry:file com target sob components/hammer-chat/.
 //
 // Uso: node scripts/build-registry.mjs
 // (Tambem exposto como: npm run registry:source)
@@ -32,7 +32,7 @@ const files = absFiles.map((abs) => {
   return {
     path: rel,
     type: "registry:file",
-    target: `~/src/components/openclaude-chat/${relFromSrc}`,
+    target: `~/src/components/hammer-chat/${relFromSrc}`,
   };
 });
 
@@ -41,16 +41,16 @@ const dependencies = Object.keys(PKG.dependencies ?? {});
 
 const registry = {
   $schema: "https://ui.shadcn.com/schema/registry.json",
-  name: "openclaude-chat",
-  homepage: "https://github.com/codrstudio/openclaude-chat",
+  name: "hammer-chat",
+  homepage: "https://github.com/codrstudio/hammer-chat",
   items: [
     {
       $schema: "https://ui.shadcn.com/schema/registry-item.json",
-      name: "openclaude-chat",
+      name: "hammer-chat",
       type: "registry:block",
-      title: "Openclaude Chat",
+      title: "Hammer Chat",
       description:
-        "Chat + History + ChatHeader triad. Ships vendored shadcn primitives under components/openclaude-chat/ui/ for full isolation.",
+        "Chat + History + ChatHeader triad. Ships vendored shadcn primitives under components/hammer-chat/ui/ for full isolation.",
       dependencies,
       files,
     },

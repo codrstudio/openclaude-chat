@@ -29,7 +29,7 @@ export class PartErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: unknown, info: unknown) {
     // eslint-disable-next-line no-console
-    console.warn("[openclaude-chat] part renderer failed:", error, info);
+    console.warn("[hammer-chat] part renderer failed:", error, info);
   }
 
   render() {

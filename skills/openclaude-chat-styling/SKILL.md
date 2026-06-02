@@ -1,7 +1,7 @@
 ---
-name: openclaude-chat-styling
+name: hammer-chat-styling
 description: >
-  Padrao de estilo para `@codrstudio/openclaude-chat` que entrega tema
+  Padrao de estilo para `@codrstudio/hammer-chat` que entrega tema
   claro/escuro funcional, mesma identidade visual do app host, e suporte a
   cenarios de Module Federation. Use sempre que o usuario integrar
   `<Chat>` em qualquer projeto e pedir: tema dark/light no chat, "deixe o
@@ -15,7 +15,7 @@ description: >
   da UI, ou empacotar o chat como remote federado (Vite plugin federation).
 ---
 
-# openclaude-chat — styling pattern
+# hammer-chat — styling pattern
 
 ## O que entrega
 
@@ -25,7 +25,7 @@ visual do host **e** responder ao toggle claro/escuro em runtime.
 
 ## Tres camadas de problema (e fix)
 
-A lib `@codrstudio/openclaude-chat` consome **tokens shadcn do host**
+A lib `@codrstudio/hammer-chat` consome **tokens shadcn do host**
 (`--background`, `--foreground`, `--primary`, `--card`, `--border`,
 `--ring`, etc.). Quem instala precisa entregar esses tokens **e** garantir
 que eles re-resolvem quando o tema muda. Tres armadilhas tipicas:
@@ -271,7 +271,7 @@ body {
 // 3. Body class drive: ThemeProvider acima ja faz isso.
 //    O <Chat> herda tudo via tokens.
 
-import { Chat, LocaleProvider, HistoryProvider, createDefaultTransport } from "@/components/openclaude-chat";
+import { Chat, LocaleProvider, HistoryProvider, createDefaultTransport } from "@/components/hammer-chat";
 
 export function App() {
   const transport = useMemo(() => createDefaultTransport("/api/v1/ai"), []);

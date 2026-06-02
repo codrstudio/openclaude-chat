@@ -145,7 +145,7 @@ export function createDefaultTransport(endpoint: string, token?: string): ChatTr
         const errText = await res.text().catch(() => `HTTP ${res.status}`)
         throw new Error(`POST /conversations/${id}/messages: ${res.status} — ${errText}`)
       }
-      // Yield the ReadableStream body — the consumer (useOpenClaudeChat) handles SSE parsing
+      // Yield the ReadableStream body — the consumer (useHammerChat) handles SSE parsing
       yield res.body
     },
 

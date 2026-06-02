@@ -1,6 +1,6 @@
-// Tipos locais usados pelo @codrstudio/openclaude-chat.
+// Tipos locais usados pelo @codrstudio/hammer-chat.
 // Nao depende de @ai-sdk/react. Modelo inspirado nos "parts" do ai-sdk,
-// mas alimentado a partir de SDKMessage do @codrstudio/openclaude-sdk.
+// mas alimentado a partir de SDKMessage do @codrstudio/hammer-sdk.
 
 export type TextPart = { type: "text"; text: string };
 

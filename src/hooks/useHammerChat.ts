@@ -12,8 +12,8 @@ import { createDefaultTransport, type ChatTransport } from "../transport.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface UseOpenClaudeChatOptions {
-  /** Base URL do servico que encapsula o openclaude-sdk. Ex: http://localhost:9500/api/v1/ai */
+export interface UseHammerChatOptions {
+  /** Base URL do servico que encapsula o hammer-sdk. Ex: http://localhost:9500/api/v1/ai */
   endpoint: string;
   /** Optional bearer token. */
   token?: string;
@@ -72,7 +72,7 @@ export interface UseOpenClaudeChatOptions {
   enableArtifacts?: boolean;
 }
 
-export interface UseOpenClaudeChatReturn {
+export interface UseHammerChatReturn {
   sessionId: string | null;
   messages: Message[];
   input: string;
@@ -95,7 +95,7 @@ export interface UseOpenClaudeChatReturn {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenClaudeChatReturn {
+export function useHammerChat(options: UseHammerChatOptions): UseHammerChatReturn {
   const {
     endpoint,
     token,
@@ -155,7 +155,7 @@ export function useOpenClaudeChat(options: UseOpenClaudeChatOptions): UseOpenCla
         setMessages(final);
       } catch (err) {
         if (cancelled) return;
-        console.warn("[openclaude-chat] auto-load history failed:", err);
+        console.warn("[hammer-chat] auto-load history failed:", err);
       }
     })();
     return () => {

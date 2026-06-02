@@ -1,5 +1,5 @@
 // Converte SDKMessage[] (formato do backbone JSONL) em Message[] (formato do chat UI).
-// Usado pelo transport.getMessages (batch) e pelo useOpenClaudeChat (streaming).
+// Usado pelo transport.getMessages (batch) e pelo useHammerChat (streaming).
 
 import type { Message, MessagePart, ToolInvocationPart, TurnMetadata } from "../types.js";
 
@@ -249,7 +249,7 @@ export function convertSDKMessages(sdkMessages: SDKMessage[]): Message[] {
       // Simple string content (user prompt)
       if (typeof content === "string" && content.trim()) {
         finalizeAssistant();
-        // Backbone (Claude CLI via openclaude-sdk) persiste user content com
+        // Backbone (Claude CLI via hammer-sdk) persiste user content com
         // wrapper `-\n...\n` — um delimitador interno do storage. No render
         // como markdown, o `-` no inicio de linha vira bullet list. Normalizamos
         // aqui: strip do prefix + trim no trailing newline.

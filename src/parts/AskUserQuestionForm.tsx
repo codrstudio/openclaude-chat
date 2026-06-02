@@ -1,4 +1,4 @@
-// AskUserQuestionForm — renderer da tool nativa AskUserQuestion (CLI openclaude).
+// AskUserQuestionForm — renderer da tool nativa AskUserQuestion (CLI hammer).
 // Estados visuais cobertos: aguardando input, submitting, resolved (answers),
 // resolved (cancelled), error.
 

@@ -1,7 +1,7 @@
 {
-  "name": "@codrstudio/openclaude-chat",
-  "version": "0.6.1",
-  "description": "Rich chat UI component — dual distribution: shadcn registry (source-copy) + npm tarball (ESM bundle). HTTP+SSE counterpart to @codrstudio/openclaude-sdk.",
+  "name": "@codrstudio/hammer-chat",
+  "version": "0.6.4",
+  "description": "Rich chat UI component — dual distribution: shadcn registry (source-copy) + npm tarball (ESM bundle). HTTP+SSE counterpart to @codrstudio/hammer-sdk.",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
@@ -30,8 +30,14 @@
     "registry:build": "npm run registry:source && npx shadcn@latest build --output ./registry"
   },
   "peerDependencies": {
+    "@codrstudio/hammer-sdk": ">=0.7.2",
     "react": "^18 || ^19",
     "react-dom": "^18 || ^19"
+  },
+  "peerDependenciesMeta": {
+    "@codrstudio/hammer-sdk": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -60,6 +66,7 @@
     "vaul": "^1.1.2"
   },
   "devDependencies": {
+    "@codrstudio/hammer-sdk": "file:../../../workspace/anvil/vendor/codrstudio-hammer-sdk-0.7.2.tgz",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "esbuild": "^0.28.0",
@@ -70,6 +77,6 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/codrstudio/openclaude-chat.git"
+    "url": "git+https://github.com/codrstudio/hammer-chat.git"
   }
 }

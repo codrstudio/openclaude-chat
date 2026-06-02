@@ -1,8 +1,8 @@
-# openclaude-chat
+# hammer-chat
 
-Rich chat UI component — HTTP+SSE counterpart to [@codrstudio/openclaude-sdk](https://github.com/codrstudio/openclaude-sdk).
+Rich chat UI component — HTTP+SSE counterpart to [@codrstudio/hammer-sdk](https://github.com/codrstudio/hammer-sdk).
 
-> **Esta lib é distribuída como registry shadcn (source-copy), não como pacote npm de runtime.** O motivo é técnico: a lib usa Tailwind v4, que gera utilidades escaneando o TSX em build-time via `@source`. Instalar como npm dep colocaria os arquivos em `node_modules/@codrstudio/openclaude-chat/dist/*.js` (sem TSX), fora do escopo de scan do Tailwind do host — e o `<Chat>` renderiza sem estilos. A instalação shadcn-way copia os fontes pra `src/`, onde o Tailwind do host já escaneia. **Não use `npm install`.**
+> **Esta lib é distribuída como registry shadcn (source-copy), não como pacote npm de runtime.** O motivo é técnico: a lib usa Tailwind v4, que gera utilidades escaneando o TSX em build-time via `@source`. Instalar como npm dep colocaria os arquivos em `node_modules/@codrstudio/hammer-chat/dist/*.js` (sem TSX), fora do escopo de scan do Tailwind do host — e o `<Chat>` renderiza sem estilos. A instalação shadcn-way copia os fontes pra `src/`, onde o Tailwind do host já escaneia. **Não use `npm install`.**
 
 Consome tokens shadcn do host (`--background`, `--foreground`, `--primary`, etc.).
 
@@ -16,11 +16,11 @@ Pré-requisitos no projeto host:
 ### Caminho A — shadcn CLI (preferido)
 
 ```bash
-npx shadcn@latest add https://github.com/codrstudio/openclaude-chat/raw/main/registry/openclaude-chat.json --overwrite --yes
+npx shadcn@latest add https://github.com/codrstudio/hammer-chat/raw/main/registry/hammer-chat.json --overwrite --yes
 ```
 
 A CLI:
-- copia os 95 arquivos para `src/components/openclaude-chat/` (ou onde seu `components.json` apontar)
+- copia os 95 arquivos para `src/components/hammer-chat/` (ou onde seu `components.json` apontar)
 - atualiza `package.json` com as dependências npm necessárias
 - respeita os aliases do seu `components.json`
 
@@ -29,7 +29,7 @@ A CLI:
 A CLI do shadcn rejeita `components.json` com campos custom (ex: `style: "radix-nova"`, `iconLibrary: "phosphor"`). Se sua CLI dispara `Invalid configuration found in components.json`, use o installer fallback:
 
 ```bash
-# instala em ./src/components/openclaude-chat
+# instala em ./src/components/hammer-chat
 node ./registry/install.mjs
 
 # base custom (ex: monorepo com apps/)
@@ -53,7 +53,7 @@ npm install react-markdown remark-gfm rehype-highlight @tanstack/react-virtual l
 ### Estrutura instalada
 
 ```
-src/components/openclaude-chat/
+src/components/hammer-chat/
 ├── index.ts                 # barrel — importe daqui
 ├── types.ts
 ├── transport.ts
@@ -69,9 +69,9 @@ src/components/openclaude-chat/
 
 ### Atualização
 
-Quando o registry receber um update (novo `openclaude-chat.json`), basta rodar de novo o comando de instalação. Os arquivos em `src/components/openclaude-chat/` são sobrescritos.
+Quando o registry receber um update (novo `hammer-chat.json`), basta rodar de novo o comando de instalação. Os arquivos em `src/components/hammer-chat/` são sobrescritos.
 
-> **Não edite os arquivos em `src/components/openclaude-chat/` — modificações são perdidas no próximo update.** Toda customização deve passar por props dos componentes.
+> **Não edite os arquivos em `src/components/hammer-chat/` — modificações são perdidas no próximo update.** Toda customização deve passar por props dos componentes.
 
 ## Uso mínimo
 
@@ -83,7 +83,7 @@ import {
   HistorySidebar,
   HistoryTrigger,
   createDefaultTransport,
-} from "@/components/openclaude-chat"
+} from "@/components/hammer-chat"
 
 const ENDPOINT = "/api/v1/ai"
 
@@ -127,11 +127,11 @@ export function App() {
 
 `<Chat>` fala um contrato HTTP+SSE específico (`POST /conversations`,
 `POST /messages` com SSE, `GET /messages` pra replay, etc.). O servidor
-fica do lado do consumer e usa **`@codrstudio/openclaude-sdk`** (`createMultiSessionPool`,
+fica do lado do consumer e usa **`@codrstudio/hammer-sdk`** (`createMultiSessionPool`,
 `createPersistentSession`).
 
 Implementação de referência completa: ver [README do SDK — seção
-"Bridge para `@codrstudio/openclaude-chat`"](https://github.com/codrstudio/openclaude-sdk#bridge-para-codrstudioopenclaude-chat).
+"Bridge para `@codrstudio/hammer-chat`"](https://github.com/codrstudio/hammer-sdk#bridge-para-codrstudiohammer-chat).
 
 ## Pitfalls
 
@@ -185,7 +185,7 @@ function ChatPage() {
 ## Styling recipe
 
 Tema claro/escuro funcional, mesma identidade visual do app host, e suporte
-a Module Federation: ver [`skills/openclaude-chat-styling/SKILL.md`](./skills/openclaude-chat-styling/SKILL.md).
+a Module Federation: ver [`skills/hammer-chat-styling/SKILL.md`](./skills/hammer-chat-styling/SKILL.md).
 
 A skill cobre as três armadilhas mais comuns ao integrar o `<Chat>` em um
 host real:
@@ -204,7 +204,7 @@ host real:
    federado.
 
 A skill é distribuída como [Anthropic Skill](https://docs.anthropic.com/en/docs/agents-and-tools/agent-skills/overview)
-— copie `skills/openclaude-chat-styling/` para `~/.claude/skills/` (ou
+— copie `skills/hammer-chat-styling/` para `~/.claude/skills/` (ou
 para o `.claude/skills/` do seu projeto) e o Claude Code aplica
 automaticamente o pattern quando você integrar o `<Chat>`.
 
@@ -217,4 +217,4 @@ automaticamente o pattern quando você integrar o `<Chat>`.
 
 ## Versões
 
-Browse todas as releases em [GitHub Releases](https://github.com/codrstudio/openclaude-chat/releases).
+Browse todas as releases em [GitHub Releases](https://github.com/codrstudio/hammer-chat/releases).

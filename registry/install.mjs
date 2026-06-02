@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// openclaude-chat registry installer (bypass shadcn CLI)
+// hammer-chat registry installer (bypass shadcn CLI)
 //
 // Use este script quando o `npx shadcn add` rejeitar teu components.json
 // (o CLI oficial e strict no schema — configs custom como `radix-nova`
 // theme ou `phosphor` icon library quebram a validacao).
 //
 // Uso:
-//   node install.mjs                              (instala em ./src/components/openclaude-chat)
+//   node install.mjs                              (instala em ./src/components/hammer-chat)
 //   node install.mjs --target-base=apps/frontend  (base custom pra resolver ~/)
 //   node install.mjs --dry-run                    (preview do que seria escrito)
 //   node install.mjs --skip-deps                  (nao imprime lista de deps)
@@ -32,7 +32,7 @@ const SKIP_DEPS = Boolean(flag("skip-deps"))
 const FORCE = Boolean(flag("force"))
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url))
-const REGISTRY_JSON = path.join(SCRIPT_DIR, "openclaude-chat.json")
+const REGISTRY_JSON = path.join(SCRIPT_DIR, "hammer-chat.json")
 
 if (!fs.existsSync(REGISTRY_JSON)) {
   console.error(`[install] registry nao encontrado: ${REGISTRY_JSON}`)
