@@ -14,9 +14,9 @@ export interface TaskCardProps {
 }
 
 const statusConfig: Record<TaskStatus, { icon: typeof Loader2; label: string; color: string }> = {
-  in_progress: { icon: Loader2, label: "In Progress", color: "text-blue-500" },
-  completed: { icon: Check, label: "Completed", color: "text-green-500" },
-  failed: { icon: X, label: "Failed", color: "text-red-500" },
+  in_progress: { icon: Loader2, label: "In Progress", color: "text-primary" },
+  completed: { icon: Check, label: "Completed", color: "text-foreground" },
+  failed: { icon: X, label: "Failed", color: "text-destructive" },
   stopped: { icon: Square, label: "Stopped", color: "text-muted-foreground" },
 };
 

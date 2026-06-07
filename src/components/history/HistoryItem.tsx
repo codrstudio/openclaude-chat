@@ -177,7 +177,7 @@ export function HistoryItem({
             {starred && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Star className="h-3.5 w-3.5 shrink-0 fill-yellow-400 text-yellow-400" />
+                  <Star className="h-3.5 w-3.5 shrink-0 fill-primary text-primary" />
                 </TooltipTrigger>
                 <TooltipContent side="top">{t("history.favorited")}</TooltipContent>
               </Tooltip>

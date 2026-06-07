@@ -45,7 +45,7 @@ export function ChatStarButton({
       <Star
         className={cn(
           "h-4 w-4",
-          starred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground",
+          starred ? "fill-primary text-primary" : "text-muted-foreground",
         )}
       />
     </Button>

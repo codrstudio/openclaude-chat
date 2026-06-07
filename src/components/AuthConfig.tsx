@@ -585,7 +585,7 @@ export function AuthConfig({
         {isConnected && !isExpired && (
           <CardContent className="pb-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle2 className="size-4 shrink-0 text-green-500" />
+              <CheckCircle2 className="size-4 shrink-0 text-primary" />
               <span>{activeLabel}</span>
             </div>
             {isProviderConnected && status?.baseUrl && (

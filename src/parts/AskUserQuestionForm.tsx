@@ -96,8 +96,8 @@ export const AskUserQuestionForm = memo(function AskUserQuestionForm({ part }: A
   if (isResolved && !isCancelled) {
     const ans = (part.resolved as { answers: Record<string, string> }).answers;
     return (
-      <div className="rounded-lg border bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900 px-3 py-2.5 text-sm">
-        <div className="flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-400 mb-2">
+      <div className="rounded-lg border bg-muted/30 px-3 py-2.5 text-sm">
+        <div className="flex items-center gap-2 font-medium text-foreground mb-2">
           <Check className="h-4 w-4 shrink-0" />
           {t("askUser.resolved")}
         </div>

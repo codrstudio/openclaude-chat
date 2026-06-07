@@ -37,7 +37,7 @@ export function HtmlRenderer({ source }: { source: string }) {
       title="HTML artifact"
       // Sandboxed: permite JS rodar mas sem acesso a same-origin.
       sandbox="allow-scripts"
-      className="w-full bg-white"
+      className="w-full bg-card"
       style={{ height: `${height}px` }}
     />
   );

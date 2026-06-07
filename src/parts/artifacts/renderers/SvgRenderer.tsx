@@ -21,7 +21,7 @@ export function SvgRenderer({ source }: { source: string }) {
   const sanitized = useMemo(() => sanitizeSvg(source), [source]);
   return (
     <div
-      className="w-full flex items-center justify-center bg-white p-4 [&_svg]:max-w-full [&_svg]:max-h-[600px] [&_svg]:h-auto"
+      className="w-full flex items-center justify-center bg-card p-4 [&_svg]:max-w-full [&_svg]:max-h-[600px] [&_svg]:h-auto"
       // SVG é contained — risco baixo após sanitização.
       dangerouslySetInnerHTML={{ __html: sanitized }}
     />

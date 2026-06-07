@@ -58,7 +58,7 @@ export function MermaidRenderer({ source, identifier }: { source: string; identi
   }
   return (
     <div
-      className="w-full flex items-center justify-center bg-white p-4 overflow-x-auto [&_svg]:max-w-full [&_svg]:h-auto"
+      className="w-full flex items-center justify-center bg-card p-4 overflow-x-auto [&_svg]:max-w-full [&_svg]:h-auto"
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );

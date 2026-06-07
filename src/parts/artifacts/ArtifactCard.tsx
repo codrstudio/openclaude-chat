@@ -253,7 +253,7 @@ function CopyButton({ text, t }: { text: string; t: ReturnType<typeof useTransla
           aria-label={label}
         >
           {copied ? (
-            <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            <Check className="h-3.5 w-3.5 text-primary" />
           ) : (
             <Copy className="h-3.5 w-3.5" />
           )}

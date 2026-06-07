@@ -160,7 +160,7 @@ export const PartRenderer = memo(function PartRenderer({ part, isStreaming, mess
       return (
         <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-2.5 py-1.5 text-xs text-muted-foreground">
           {p.done ? (
-            <Check className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <Check className="h-3 w-3 shrink-0 text-primary" />
           ) : (
             <Loader2 className="h-3 w-3 animate-spin shrink-0" />
           )}
