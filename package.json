@@ -24,10 +24,12 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && npm run registry:build",
+    "build:dist": "tsup",
     "typecheck": "tsc --noEmit",
     "registry:source": "node scripts/build-registry.mjs",
-    "registry:build": "npm run registry:source && npx shadcn@latest build --output ./registry"
+    "registry:build": "npm run registry:source && npx shadcn@latest build --output ./registry && npm run registry:check",
+    "registry:check": "node scripts/check-registry.mjs"
   },
   "peerDependencies": {
     "@codrstudio/hammer-sdk": ">=0.7.2",

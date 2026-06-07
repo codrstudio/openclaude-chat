@@ -57,6 +57,16 @@
           "target": "~/src/components/hammer-chat/artifacts/runtime.ts"
         },
         {
+          "path": "src/components/AnthropicAuthConfig.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/hammer-chat/components/AnthropicAuthConfig.tsx"
+        },
+        {
+          "path": "src/components/AuthConfig.tsx",
+          "type": "registry:file",
+          "target": "~/src/components/hammer-chat/components/AuthConfig.tsx"
+        },
+        {
           "path": "src/components/Chat.tsx",
           "type": "registry:file",
           "target": "~/src/components/hammer-chat/components/Chat.tsx"
@@ -207,6 +217,11 @@
           "target": "~/src/components/hammer-chat/hooks/HistoryProvider.tsx"
         },
         {
+          "path": "src/hooks/useHammerChat.ts",
+          "type": "registry:file",
+          "target": "~/src/components/hammer-chat/hooks/useHammerChat.ts"
+        },
+        {
           "path": "src/hooks/useIsMobile.ts",
           "type": "registry:file",
           "target": "~/src/components/hammer-chat/hooks/useIsMobile.ts"
@@ -220,11 +235,6 @@
           "path": "src/hooks/useModels.ts",
           "type": "registry:file",
           "target": "~/src/components/hammer-chat/hooks/useModels.ts"
-        },
-        {
-          "path": "src/hooks/useHammerChat.ts",
-          "type": "registry:file",
-          "target": "~/src/components/hammer-chat/hooks/useHammerChat.ts"
         },
         {
           "path": "src/i18n/index.ts",

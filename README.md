@@ -2,9 +2,11 @@
 
 Rich chat UI component — HTTP+SSE counterpart to [@codrstudio/hammer-sdk](https://github.com/codrstudio/hammer-sdk).
 
-> **Esta lib é distribuída como registry shadcn (source-copy), não como pacote npm de runtime.** O motivo é técnico: a lib usa Tailwind v4, que gera utilidades escaneando o TSX em build-time via `@source`. Instalar como npm dep colocaria os arquivos em `node_modules/@codrstudio/hammer-chat/dist/*.js` (sem TSX), fora do escopo de scan do Tailwind do host — e o `<Chat>` renderiza sem estilos. A instalação shadcn-way copia os fontes pra `src/`, onde o Tailwind do host já escaneia. **Não use `npm install`.**
+> **Instale via registry shadcn (source-copy) — é assim que a lib é distribuída.** O `install.mjs` (ou `npx shadcn add`) copia os fontes TSX para `src/components/hammer-chat/` do seu projeto, onde o Tailwind v4 do host já os escaneia via `@source` — então o `<Chat>` nasce com estilos corretos e adotando os tokens do seu tema.
+>
+> **Diagnóstico rápido:** se o `<Chat>` aparecer sem estilos, a causa provável é consumo via npm (`node_modules/@codrstudio/hammer-chat/dist/*.js` — JS já compilado, sem TSX, fora do scan do Tailwind). A correção é migrar para o caminho source-copy abaixo. O pacote publica `dist/` apenas para tipos e import direto em contextos não-Tailwind; a renderização estilizada vem do source-copy.
 
-Consome tokens shadcn do host (`--background`, `--foreground`, `--primary`, etc.).
+Consome tokens shadcn do host (`--background`, `--foreground`, `--primary`, etc.) — adota a identidade visual do app onde é montado, sem cor própria.
 
 ## Instalação
 
@@ -20,7 +22,7 @@ npx shadcn@latest add https://github.com/codrstudio/hammer-chat/raw/main/registr
 ```
 
 A CLI:
-- copia os 95 arquivos para `src/components/hammer-chat/` (ou onde seu `components.json` apontar)
+- copia os 84 arquivos para `src/components/hammer-chat/` (ou onde seu `components.json` apontar)
 - atualiza `package.json` com as dependências npm necessárias
 - respeita os aliases do seu `components.json`
 
@@ -39,39 +41,30 @@ node ./registry/install.mjs --target-base=apps/frontend
 node ./registry/install.mjs --dry-run
 ```
 
-Depois instale as deps npm manualmente (o script imprime o comando exato no final):
-
-```bash
-npm install react-markdown remark-gfm rehype-highlight @tanstack/react-virtual lucide-react \
-  class-variance-authority clsx tailwind-merge recharts embla-carousel-react cmdk \
-  @radix-ui/react-alert-dialog @radix-ui/react-collapsible @radix-ui/react-context-menu \
-  @radix-ui/react-dialog @radix-ui/react-dropdown-menu @radix-ui/react-popover \
-  @radix-ui/react-scroll-area @radix-ui/react-separator @radix-ui/react-tooltip \
-  framer-motion sucrase vaul
-```
+Depois instale as deps npm: o `install.mjs` imprime o comando `npm install …` exato (24 pacotes) ao final da execução — copie de lá, assim a lista acompanha o registry e nunca desatualiza.
 
 ### Estrutura instalada
 
 ```
-src/components/hammer-chat/
+src/components/hammer-chat/      # 84 arquivos
 ├── index.ts                 # barrel — importe daqui
 ├── types.ts
 ├── transport.ts
-├── styles.css
-├── components/              # <Chat>, <History>, <ChatHeader>, ...
-├── display/                 # 20 display renderers
-├── hooks/                   # ChatProvider, HistoryProvider, ...
-├── i18n/                    # en-US, pt-BR, es-ES + custom
-├── lib/
-├── parts/                   # PartRenderer, ReasoningBlock, ...
-└── ui/                      # 17 shadcn primitives vendored
+├── styles.css               # tokens default + mapping @theme inline
+├── components/              # <Chat>, <ChatHeader>, <History*>, AuthConfig, ... (+ history/)
+├── hooks/                   # ChatProvider, HistoryProvider, useModels, ...
+├── i18n/                    # en-US, pt-BR, es-ES
+├── lib/                     # utils (cn), sdk-to-message
+├── parts/                   # PartRenderer, ReasoningBlock, TaskCard, ... (+ artifacts/)
+├── artifacts/               # AppHost, compile, parser, runtime (React ao vivo)
+└── ui/                      # 19 shadcn primitives vendored (button, badge, card, ...)
 ```
 
 ### Atualização
 
-Quando o registry receber um update (novo `hammer-chat.json`), basta rodar de novo o comando de instalação. Os arquivos em `src/components/hammer-chat/` são sobrescritos.
+Quando o registry receber um update (novo `hammer-chat.json`), rode de novo o comando de instalação — os arquivos em `src/components/hammer-chat/` são sobrescritos.
 
-> **Não edite os arquivos em `src/components/hammer-chat/` — modificações são perdidas no próximo update.** Toda customização deve passar por props dos componentes.
+> **Customize via props dos componentes e via tokens do seu tema** (`--primary`, `--radius`, etc.). Por serem sobrescritos a cada update, trate os arquivos em `src/components/hammer-chat/` como gerados: se precisar de um comportamento que as props não cobrem, abra issue/PR no repo do hammer-chat para que a mudança entre pelo registry.
 
 ## Uso mínimo
 
@@ -207,6 +200,43 @@ A skill é distribuída como [Anthropic Skill](https://docs.anthropic.com/en/doc
 — copie `skills/hammer-chat-styling/` para `~/.claude/skills/` (ou
 para o `.claude/skills/` do seu projeto) e o Claude Code aplica
 automaticamente o pattern quando você integrar o `<Chat>`.
+
+## Mantendo a lib (pipeline do registry)
+
+Esta lib tem **dois canais de distribuição**, ambos derivados de `src/`:
+
+- **registry source-copy** (`registry/hammer-chat.json`) — o canal que os consumidores usam (`install.mjs` / `npx shadcn add`). É a entrega real.
+- **npm dist** (`dist/`) — bundle ESM + tipos, para import direto/typecheck.
+
+`src/` é a única fonte da verdade. O gerador (`scripts/build-registry.mjs`) faz `walk(src/)` automático — todo `.tsx/.ts/.css` em `src/` entra no registry sem lista manual. A regra de ouro: **uma mudança em `src/` só está entregue quando o registry foi regenerado.**
+
+### Fluxo ao adicionar ou editar um componente
+
+```bash
+# 1. edite/crie em src/ e exporte no barrel src/index.ts
+# 2. regenere os dois canais + valide, num passo só:
+npm run build        # = tsup (dist) + registry:build + registry:check
+```
+
+`npm run build` está acoplado de propósito: buildar o dist **sempre** regenera o registry e roda o gate. Isso fecha a porta para o estado "dist novo, registry stale" (em que o componente existe no canal npm mas some no canal real que os usuários consomem).
+
+### Definition of Done — componente no hammer-chat
+
+Um componente novo só está pronto quando todos passam:
+
+1. Arquivo em `src/` e exportado no barrel `src/index.ts`
+2. `npm run registry:check` passa (o componente aparece em `registry.json` **e** `registry/hammer-chat.json`)
+3. Deps npm novas declaradas em `package.json` (o gerador as espelha no registry automaticamente)
+4. Instalado via `install.mjs` num projeto limpo, o componente é copiado e o barrel o exporta
+5. Renderiza com estilo no **canal source-copy** (não validar só por import npm — o estilo correto vem do source-copy)
+
+### Gate de integridade
+
+```bash
+npm run registry:check   # falha (exit 1) se src/ divergir de qualquer artefato do registry
+```
+
+Liste MISSING (arquivo de `src/` ausente do registry) e ORPHAN (registry aponta arquivo que sumiu de `src/`). Rode em CI e antes de publicar para garantir que o canal real reflete `src/`.
 
 ## Compatibilidade
 
