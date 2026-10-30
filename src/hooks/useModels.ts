@@ -16,18 +16,29 @@ export interface UseModelsReturn {
 
 const cache = new Map<string, { models: ModelEntry[]; defaultModel: string | null }>();
 
-export function useModels(endpoint: string, fetcher?: typeof fetch): UseModelsReturn {
-  const [models, setModels] = useState<ModelEntry[]>(() => cache.get(endpoint)?.models ?? []);
-  const [defaultModel, setDefaultModel] = useState<string | null>(() => cache.get(endpoint)?.defaultModel ?? null);
-  const [isLoading, setIsLoading] = useState(!!endpoint && !cache.has(endpoint));
+function cacheKey(endpoint: string, token?: string): string {
+  return token ? `${endpoint}|${token}` : endpoint;
+}
+
+export function useModels(
+  endpoint: string,
+  fetcher?: typeof fetch,
+  token?: string,
+): UseModelsReturn {
+  const key = cacheKey(endpoint, token);
+  const [models, setModels] = useState<ModelEntry[]>(() => cache.get(key)?.models ?? []);
+  const [defaultModel, setDefaultModel] = useState<string | null>(() => cache.get(key)?.defaultModel ?? null);
+  const [isLoading, setIsLoading] = useState(!!endpoint && !cache.has(key));
 
   useEffect(() => {
-    if (!endpoint || cache.has(endpoint)) return;
+    if (!endpoint || cache.has(key)) return;
 
     let cancelled = false;
     const doFetch = fetcher ?? fetch;
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    doFetch(`${endpoint}/models`)
+    doFetch(`${endpoint}/models`, { headers })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -42,7 +53,7 @@ export function useModels(endpoint: string, fetcher?: typeof fetch): UseModelsRe
           supports_vision: m.supports_vision ?? null,
         }));
         const def = data.default_model ?? null;
-        cache.set(endpoint, { models: entries, defaultModel: def });
+        cache.set(key, { models: entries, defaultModel: def });
         setModels(entries);
         setDefaultModel(def);
         setIsLoading(false);
@@ -52,7 +63,7 @@ export function useModels(endpoint: string, fetcher?: typeof fetch): UseModelsRe
       });
 
     return () => { cancelled = true; };
-  }, [endpoint, fetcher]);
+  }, [endpoint, fetcher, token, key]);
 
   return { models, defaultModel, isLoading };
 }

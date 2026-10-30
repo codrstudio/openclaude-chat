@@ -163,6 +163,7 @@ export function Chat({
   const { models, defaultModel, isLoading: modelsLoading } = useModels(
     enableModelSelect ? endpoint : "",
     enableModelSelect ? fetcher : undefined,
+    enableModelSelect ? token : undefined,
   );
   const [selectedModel, setSelectedModel] = useState<string | undefined>(undefined);
   const resolvedLocale = useMemo(() => resolveLocale(localeProp), [localeProp]);
